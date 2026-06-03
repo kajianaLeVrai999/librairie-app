@@ -12,25 +12,25 @@ import java.time.LocalDate;
 public class Arrival {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
 
     private LocalDate arrivalDate;
     private int quantity;
     private String supplier;
 
     @ManyToOne
-    @JoinColumn(name = "bookCopy_id")
-    private BookCopy bookcopy;
+    @JoinColumn(name = "book_id")
+    private Book book;
 
     public Arrival() {}
 
-    public Arrival(String id, LocalDate arrivalDate,
-                   int quantity, String supplier, BookCopy bookcopy) {
+    public Arrival(int id, LocalDate arrivalDate,
+                   int quantity, String supplier, Book book) {
         this.id = id;
         this.arrivalDate = arrivalDate;
         this.quantity = quantity;
         this.supplier = supplier;
-        this.bookcopy = bookcopy;
+        this.book = book;
     }
 }
