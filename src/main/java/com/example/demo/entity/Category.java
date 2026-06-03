@@ -11,15 +11,15 @@ import lombok.Setter;
 public class Category {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
 
     private String name;
     private String description;
 
     public Category() {}
 
-    public Category(String id, String name, String description) {
+    public Category(int id, String name, String description) {
         this.id = id;
         this.name = name;
         this.description = description;
