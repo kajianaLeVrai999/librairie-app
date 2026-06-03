@@ -11,8 +11,8 @@ import lombok.Setter;
 public class Customer {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
 
     private String firstName;
     private String lastName;
@@ -22,7 +22,7 @@ public class Customer {
 
     public Customer() {}
 
-    public Customer(String id, String firstName, String lastName,
+    public Customer(int id, String firstName, String lastName,
                     String email, String phone, String address) {
         this.id = id;
         this.firstName = firstName;
