@@ -21,14 +21,11 @@ public class BookCopy {
     @Enumerated(EnumType.STRING)
     private CopyStatus status;
 
-    private BookCopyFormat  bookCopyFormat;
-
     public BookCopy() {}
 
-    public BookCopy(int id, Book book, CopyStatus status, BookCopyFormat bookCopyFormat) {
+    public BookCopy(int id, Book book, CopyStatus status) {
         this.id = id;
         this.book = book;
         this.status = status;
-        this.bookCopyFormat = bookCopyFormat;
     }
 }
