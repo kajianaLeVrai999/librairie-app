@@ -1,5 +1,3 @@
-package com.example.demo.entity;
-
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,8 +9,8 @@ import lombok.Setter;
 public class Author {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
 
     private String firstName;
     private String lastName;
@@ -21,7 +19,7 @@ public class Author {
 
     public Author() {}
 
-    public Author(String id, String firstName, String lastName,
+    public Author(int id, String firstName, String lastName,
                   String biography, String nationality) {
         this.id = id;
         this.firstName = firstName;
