@@ -13,8 +13,8 @@ import java.util.List;
 public class Book {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
 
     private String title;
     private String description;
@@ -36,7 +36,7 @@ public class Book {
 
     public Book() {}
 
-    public Book(String id, String title, String description, Double price,
+    public Book(int id, String title, String description, Double price,
                 LocalDate publicationDate, String isbn,
                 Category category, List<Author> authors) {
         this.id = id;
