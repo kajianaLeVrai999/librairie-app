@@ -41,3 +41,29 @@ out/
 
 ### Mac OS ###
 .DS_Store
+
+# Compiled files
+*.class
+
+# IDE
+.idea/
+.settings/
+
+# Logs
+*.log
+
+# Environment & secrets
+.env
+*.secret.properties
+application-prod.properties
+application-dev.properties
+
+# OS specific
+Thumbs.db
+
+# Gradle
+.gradle/
+gradle-app.setting
+
+# Lombok
+*.orig
