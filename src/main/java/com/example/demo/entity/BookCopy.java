@@ -1,26 +1,31 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
+@Table(name = "book_copy")
+@Getter
+@Setter
 public class BookCopy {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    private String barcode;
-    private double price;
-    private boolean sold;
+    private int id;
 
     @ManyToOne
     @JoinColumn(name = "book_id")
     private Book book;
 
-    public boolean isAvailable() {
-        return !sold;
-    }
+    @Enumerated(EnumType.STRING)
+    private CopyStatus status;
 
-    public void markAsSold() {
-        this.sold = true;
+    public BookCopy() {}
+
+    public BookCopy(int id, Book book, CopyStatus status) {
+        this.id = id;
+        this.book = book;
+        this.status = status;
     }
 }
