@@ -1,51 +1,38 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import java.time.LocalDate;
 import java.util.List;
 
 @Entity
-@Table(name = "book")
-@Getter
-@Setter
 public class Book {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     private String title;
-    private String description;
-    private Double price;
-    private LocalDate publicationDate;
-    private String isbn;
-
-    @ManyToOne
-    @JoinColumn(name = "category_id")
-    private Category category;
 
     @ManyToMany
     @JoinTable(
-            name = "book_author",
-            joinColumns = @JoinColumn(name = "book_id"),
-            inverseJoinColumns = @JoinColumn(name = "author_id")
+        name = "book_author",
+        joinColumns = @JoinColumn(name = "book_id"),
+        inverseJoinColumns = @JoinColumn(name = "author_id")
     )
-    private List<Author> authors;
+    private List<Author> authorList;
 
-    public Book() {}
+    @ManyToMany
+    @JoinTable(
+        name = "book_gender",
+        joinColumns = @JoinColumn(name = "book_id"),
+        inverseJoinColumns = @JoinColumn(name = "gender_id")
+    )
+    private List<Gender> genderList;
 
-    public Book(int id, String title, String description, Double price,
-                LocalDate publicationDate, String isbn,
-                Category category, List<Author> authors) {
-        this.id = id;
-        this.title = title;
-        this.description = description;
-        this.price = price;
-        this.publicationDate = publicationDate;
-        this.isbn = isbn;
-        this.category = category;
-        this.authors = authors;
-    }
+    @OneToMany(mappedBy = "book")
+    private List<BookCopy> bookCopyList;
+
+    @OneToMany(mappedBy = "book")
+    private List<Arrival> arrivalList;
+
+    @OneToMany(mappedBy = "book")
+    private List<Sale> saleList;
 }
