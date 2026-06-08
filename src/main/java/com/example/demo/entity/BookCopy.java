@@ -20,12 +20,16 @@ public class BookCopy {
 
     @Enumerated(EnumType.STRING)
     private CopyStatus status;
+    
+    @Enumerated(EnumType.STRING)
+    private BookFormat format;
 
     public BookCopy() {}
 
-    public BookCopy(int id, Book book, CopyStatus status) {
+    public BookCopy(int id, Book book, CopyStatus status, BookFormat format) {
         this.id = id;
         this.book = book;
         this.status = status;
+        this.format = format;
     }
 }
