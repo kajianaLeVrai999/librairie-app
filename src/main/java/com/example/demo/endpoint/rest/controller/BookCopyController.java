@@ -8,17 +8,15 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/copies")
 public class BookCopyController {
 
-    private final BookCopyService service;
+  private final BookCopyService service;
 
-    public BookCopyController(BookCopyService service) {
-        this.service = service;
-    }
+  public BookCopyController(BookCopyService service) {
+    this.service = service;
+  }
 
-    @PostMapping("/book/{bookId}")
-    public BookCopy createCopy(
-            @PathVariable Integer bookId,
-            @RequestBody BookCopy copy) {
+  @PostMapping("/book/{bookId}")
+  public BookCopy createCopy(@PathVariable Integer bookId, @RequestBody BookCopy copy) {
 
-        return service.create(bookId, copy);
-    }
+    return service.create(bookId, copy);
+  }
 }

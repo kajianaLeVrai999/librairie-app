@@ -9,44 +9,41 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/books")
 public class BookController {
 
-    private final BookService service;
+  private final BookService service;
 
-    public BookController(BookService service) {
-        this.service = service;
-    }
+  public BookController(BookService service) {
+    this.service = service;
+  }
 
-    @PostMapping
-    public Book create(@RequestBody Book book) {
-        return service.create(book);
-    }
+  @PostMapping
+  public Book create(@RequestBody Book book) {
+    return service.create(book);
+  }
 
-    @GetMapping
-    public List<Book> getAll() {
-        return service.getAll();
-    }
+  @GetMapping
+  public List<Book> getAll() {
+    return service.getAll();
+  }
 
-    @GetMapping("/{id}")
-    public Book getById(@PathVariable Integer id) {
-        return service.getById(id);
-    }
+  @GetMapping("/{id}")
+  public Book getById(@PathVariable Integer id) {
+    return service.getById(id);
+  }
 
-    @PutMapping("/{id}")
-    public Book update(
-            @PathVariable Integer id,
-            @RequestBody Book book) {
+  @PutMapping("/{id}")
+  public Book update(@PathVariable Integer id, @RequestBody Book book) {
 
-        return service.update(id, book);
-    }
+    return service.update(id, book);
+  }
 
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable Integer id) {
-        service.delete(id);
-    }
+  @DeleteMapping("/{id}")
+  public void delete(@PathVariable Integer id) {
+    service.delete(id);
+  }
 
-    @GetMapping("/search")
-    public List<Book> search(
-            @RequestParam String keyword) {
+  @GetMapping("/search")
+  public List<Book> search(@RequestParam String keyword) {
 
-        return service.search(keyword);
-    }
+    return service.search(keyword);
+  }
 }

@@ -10,43 +10,39 @@ import org.junit.jupiter.api.Test;
 
 class BookServiceTest {
 
-    @Test
-    void should_get_book_by_id() {
+  @Test
+  void should_get_book_by_id() {
 
-        BookRepository repository = mock(BookRepository.class);
+    BookRepository repository = mock(BookRepository.class);
 
-        Book book = new Book();
-        book.setTitle("Harry Potter");
+    Book book = new Book();
+    book.setTitle("Harry Potter");
 
-        when(repository.findById(1))
-                .thenReturn(Optional.of(book));
+    when(repository.findById(1)).thenReturn(Optional.of(book));
 
-        BookService service =
-                new BookService(repository);
+    BookService service = new BookService(repository);
 
-        Book result = service.getById(1);
+    Book result = service.getById(1);
 
-        assertEquals("Harry Potter", result.getTitle());
-    }
+    assertEquals("Harry Potter", result.getTitle());
+  }
 
-    @Test
-    void should_create_book() {
+  @Test
+  void should_create_book() {
 
-        BookRepository repository = mock(BookRepository.class);
+    BookRepository repository = mock(BookRepository.class);
 
-        Book book = new Book();
-        book.setTitle("Harry Potter");
+    Book book = new Book();
+    book.setTitle("Harry Potter");
 
-        when(repository.save(book))
-                .thenReturn(book);
+    when(repository.save(book)).thenReturn(book);
 
-        BookService service =
-                new BookService(repository);
+    BookService service = new BookService(repository);
 
-        Book saved = service.create(book);
+    Book saved = service.create(book);
 
-        assertEquals("Harry Potter", saved.getTitle());
+    assertEquals("Harry Potter", saved.getTitle());
 
-        verify(repository).save(book);
-    }
+    verify(repository).save(book);
+  }
 }
