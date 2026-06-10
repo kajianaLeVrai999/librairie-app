@@ -1,10 +1,10 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
 import java.time.LocalDate;
 import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "book")
@@ -30,16 +30,14 @@ public class Book {
     @JoinTable(
         name = "book_author",
         joinColumns = @JoinColumn(name = "book_id"),
-        inverseJoinColumns = @JoinColumn(name = "author_id")
-    )
+        inverseJoinColumns = @JoinColumn(name = "author_id"))
     private List<Author> authors;
 
     @ManyToMany
     @JoinTable(
         name = "book_gender",
         joinColumns = @JoinColumn(name = "book_id"),
-        inverseJoinColumns = @JoinColumn(name = "gender_id")
-    )
+        inverseJoinColumns = @JoinColumn(name = "gender_id"))
     private List<Gender> genders;
 
     public Book() {}
