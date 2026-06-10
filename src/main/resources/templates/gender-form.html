@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Ajouter un genre</title>
+    <style>
+        form { width: 500px; }
+        label { display: inline-block; width: 120px; margin-top: 10px; }
+        input { width: 350px; padding: 5px; }
+        button { margin-top: 15px; padding: 8px 15px; }
+        .navbar { background-color: #333; overflow: hidden; margin-bottom: 20px; }
+        .navbar a { float: left; color: white; padding: 14px 16px; text-decoration: none; }
+        .navbar a:hover { background-color: #ddd; color: black; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="/">🏠 Dashboard</a>
+        <a href="/books">📖 Livres</a>
+        <a href="/bookcopies">📚 Exemplaires</a>
+        <a href="/arrivals">📦 Arrivages</a>
+        <a href="/authors">✍️ Auteurs</a>
+        <a href="/categories">📂 Catégories</a>
+        <a href="/customers">👥 Clients</a>
+        <a href="/sales">💰 Ventes</a>
+        <a href="/reservations">📅 Réservations</a>
+        <a href="/genders">🏷️ Genres</a>
+    </div>
+
+    <h1>Nouveau genre littéraire</h1>
+
+    <a href="/genders">Retour à la liste</a>
+
+    <br/><br/>
+
+    <form th:action="@{/genders/save}" th:object="${gender}" method="post">
+        <label>Nom du genre :</label>
+        <input type="text" th:field="*{name}" placeholder="Ex: Roman, Science-Fiction, Policier..." required/><br/>
+
+        <button type="submit">Enregistrer</button>
+    </form>
+</body>
+</html>

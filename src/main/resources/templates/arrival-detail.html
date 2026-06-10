@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Détail de l'arrivage</title>
+    <style>
+        .info { margin: 10px 0; }
+        .label { font-weight: bold; display: inline-block; width: 120px; }
+        .navbar { background-color: #333; overflow: hidden; margin-bottom: 20px; }
+        .navbar a { float: left; color: white; padding: 14px 16px; text-decoration: none; }
+        .navbar a:hover { background-color: #ddd; color: black; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="/">🏠 Dashboard</a>
+        <a href="/books">📖 Livres</a>
+        <a href="/bookcopies">📚 Exemplaires</a>
+        <a href="/arrivals">📦 Arrivages</a>
+        <a href="/authors">✍️ Auteurs</a>
+        <a href="/categories">📂 Catégories</a>
+        <a href="/customers">👥 Clients</a>
+        <a href="/sales">💰 Ventes</a>
+        <a href="/reservations">📅 Réservations</a>
+        <a href="/genders">🏷️ Genres</a>
+    </div>
+
+    <h1>Détail de l'arrivage</h1>
+
+    <a href="/arrivals">Retour à la liste</a>
+
+    <br/><br/>
+
+    <div th:if="${arrival == null}">
+        <p style="color:red;">Arrivage non trouvé</p>
+    </div>
+
+    <div th:unless="${arrival == null}">
+        <div class="info"><span class="label">ID :</span> <span th:text="${arrival.id}"></span></div>
+        <div class="info"><span class="label">Date :</span> <span th:text="${arrival.arrivalDate}"></span></div>
+        <div class="info"><span class="label">Livre :</span> <span th:text="${arrival.book != null ? arrival.book.title : '—'}"></span></div>
+        <div class="info"><span class="label">Quantité :</span> <span th:text="${arrival.quantity}"></span></div>
+        <div class="info"><span class="label">Fournisseur :</span> <span th:text="${arrival.supplier}"></span></div>
+    </div>
+</body>
+</html>
