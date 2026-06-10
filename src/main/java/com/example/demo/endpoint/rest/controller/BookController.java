@@ -1,49 +1,78 @@
-package com.example.demo.endpoint.rest.controller;
+package com.example.demo.controller;
 
 import com.example.demo.entity.Book;
-import com.example.demo.service.BookService;
-import java.util.List;
+import com.example.demo.repository.BookRepository;
+import com.example.demo.repository.CategoryRepository;
+import com.example.demo.repository.AuthorRepository;
+import com.example.demo.service.GoogleBooksService;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-@RestController
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
+@Controller
 @RequestMapping("/books")
 public class BookController {
 
-  private final BookService service;
+    private final BookRepository bookRepository;
+    private final CategoryRepository categoryRepository;
+    private final AuthorRepository authorRepository;
+    private final GoogleBooksService googleBooksService;
 
-  public BookController(BookService service) {
-    this.service = service;
-  }
+    public BookController(BookRepository bookRepository,
+                          CategoryRepository categoryRepository,
+                          AuthorRepository authorRepository,
+                          GoogleBooksService googleBooksService) {
+        this.bookRepository = bookRepository;
+        this.categoryRepository = categoryRepository;
+        this.authorRepository = authorRepository;
+        this.googleBooksService = googleBooksService;
+    }
 
-  @PostMapping
-  public Book create(@RequestBody Book book) {
-    return service.create(book);
-  }
+    @GetMapping
+    public String listBooks(Model model) {
+        List<Book> books = bookRepository.findAll();
+        model.addAttribute("books", books);
+        return "book-list";
+    }
 
-  @GetMapping
-  public List<Book> getAll() {
-    return service.getAll();
-  }
+    @GetMapping("/new")
+    public String showCreateForm(Model model) {
+        model.addAttribute("book", new Book());
+        model.addAttribute("categories", categoryRepository.findAll());
+        model.addAttribute("authors", authorRepository.findAll());
+        return "book-form";
+    }
 
-  @GetMapping("/{id}")
-  public Book getById(@PathVariable Integer id) {
-    return service.getById(id);
-  }
+    @PostMapping("/save")
+    public String saveBook(@ModelAttribute Book book) {
+        bookRepository.save(book);
+        return "redirect:/books";
+    }
 
-  @PutMapping("/{id}")
-  public Book update(@PathVariable Integer id, @RequestBody Book book) {
+    @GetMapping("/{id}")
+    public String viewBook(@PathVariable Integer id, Model model) {
+        Book book = bookRepository.findById(id).orElse(null);
+        model.addAttribute("book", book);
+        return "book-detail";
+    }
 
-    return service.update(id, book);
-  }
+    @GetMapping("/delete/{id}")
+    public String deleteBook(@PathVariable Integer id) {
+        bookRepository.deleteById(id);
+        return "redirect:/books";
+    }
 
-  @DeleteMapping("/{id}")
-  public void delete(@PathVariable Integer id) {
-    service.delete(id);
-  }
+    @PostMapping("/import-async")
+    @ResponseBody
+    public String importBookAsync(@RequestParam String isbn) {
+        String cleanIsbn = isbn.replaceAll("[\\s-]", "");
 
-  @GetMapping("/search")
-  public List<Book> search(@RequestParam String keyword) {
+        CompletableFuture<Book> future = googleBooksService.fetchAndSaveBookByIsbn(cleanIsbn);
 
-    return service.search(keyword);
-  }
+        return "Import lancé en arrière-plan pour l'ISBN: " + cleanIsbn +
+               ". La page va se rafraîchir automatiquement dans quelques secondes.";
+    }
 }
