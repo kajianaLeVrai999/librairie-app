@@ -57,7 +57,7 @@ public class BookCopyService {
     // Récupérer les exemplaires d'un livre
     public List<BookCopy> getByBookId(Integer bookId) {
         return copyRepository.findAll().stream()
-                .filter(copy -> copy.getBook() != null && copy.getBook().getId().equals(bookId))
+                .filter(copy -> copy.getBook() != null && copy.getBook().getId() == bookId)  // ← corrigé
                 .toList();
     }
 

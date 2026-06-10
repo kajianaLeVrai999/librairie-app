@@ -1,8 +1,7 @@
-package com.example.demo.controller;
+package com.example.demo.endpoint.rest.controller;
 
 import com.example.demo.entity.Sale;
 import com.example.demo.entity.BookCopy;
-import com.example.demo.entity.Customer;
 import com.example.demo.repository.SaleRepository;
 import com.example.demo.repository.BookCopyRepository;
 import com.example.demo.repository.CustomerRepository;
