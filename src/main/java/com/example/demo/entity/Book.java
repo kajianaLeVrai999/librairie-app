@@ -44,7 +44,6 @@ public class Book {
 
     public Book() {}
 
-    // Constructeur sans id (auto-généré)
     public Book(String title, String description, Double price,
                 LocalDate publicationDate, String isbn,
                 Category category, List<Author> authors, List<Gender> genders) {
