@@ -4,11 +4,13 @@ import com.example.demo.entity.Book;
 import com.example.demo.repository.BookRepository;
 import com.example.demo.repository.CategoryRepository;
 import com.example.demo.repository.AuthorRepository;
+import com.example.demo.service.GoogleBooksService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Controller
 @RequestMapping("/books")
@@ -17,13 +19,16 @@ public class BookController {
     private final BookRepository bookRepository;
     private final CategoryRepository categoryRepository;
     private final AuthorRepository authorRepository;
+    private final GoogleBooksService googleBooksService;
 
     public BookController(BookRepository bookRepository,
                           CategoryRepository categoryRepository,
-                          AuthorRepository authorRepository) {
+                          AuthorRepository authorRepository,
+                          GoogleBooksService googleBooksService) {
         this.bookRepository = bookRepository;
         this.categoryRepository = categoryRepository;
         this.authorRepository = authorRepository;
+        this.googleBooksService = googleBooksService;
     }
 
     @GetMapping
@@ -58,5 +63,16 @@ public class BookController {
     public String deleteBook(@PathVariable Integer id) {
         bookRepository.deleteById(id);
         return "redirect:/books";
+    }
+
+    @PostMapping("/import-async")
+    @ResponseBody
+    public String importBookAsync(@RequestParam String isbn) {
+        String cleanIsbn = isbn.replaceAll("[\\s-]", "");
+
+        CompletableFuture<Book> future = googleBooksService.fetchAndSaveBookByIsbn(cleanIsbn);
+
+        return "Import lancé en arrière-plan pour l'ISBN: " + cleanIsbn +
+               ". La page va se rafraîchir automatiquement dans quelques secondes.";
     }
 }
