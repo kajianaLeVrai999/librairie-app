@@ -7,7 +7,6 @@ import com.example.demo.repository.CustomerRepository;
 import com.example.demo.repository.SaleRepository;
 import java.time.LocalDate;
 import java.util.List;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 

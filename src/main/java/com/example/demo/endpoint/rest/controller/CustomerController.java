@@ -3,7 +3,6 @@ package com.example.demo.endpoint.rest.controller;
 import com.example.demo.entity.Customer;
 import com.example.demo.repository.CustomerRepository;
 import java.util.List;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 

@@ -9,7 +9,6 @@ import com.example.demo.repository.CustomerRepository;
 import com.example.demo.repository.ReservationRepository;
 import com.example.demo.repository.SaleRepository;
 import java.time.LocalDate;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

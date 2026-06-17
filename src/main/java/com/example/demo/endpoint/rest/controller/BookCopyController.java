@@ -5,7 +5,6 @@ import com.example.demo.entity.CopyStatus;
 import com.example.demo.repository.BookCopyRepository;
 import com.example.demo.repository.BookRepository;
 import java.util.List;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
