@@ -3,10 +3,14 @@ package com.example.demo.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import com.example.demo.endpoint.rest.controller.BookController;
 import com.example.demo.entity.Book;
 import com.example.demo.repository.BookRepository;
 import java.util.Optional;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 
 class BookServiceTest {
 
@@ -47,14 +51,14 @@ class BookServiceTest {
   }
 
   @Test
-void should_return_null_when_book_not_found() {
-    BookRepository repository = mock(BookRepository.class);
-    when(repository.findById(999)).thenReturn(Optional.empty());
+  void should_return_null_when_book_not_found() {
+      BookRepository repository = mock(BookRepository.class);
+      when(repository.findById(999)).thenReturn(Optional.empty());
 
-    BookService service = new BookService(repository);
+      BookService service = new BookService(repository);
 
-    Book result = service.getById(999);
+      Book result = service.getById(999);
 
-    assertNull(result);
-}
+      assertNull(result);
+  }
 }
