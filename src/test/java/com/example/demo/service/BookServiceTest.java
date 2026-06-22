@@ -4,18 +4,21 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.example.demo.endpoint.rest.controller.BookController;
 import com.example.demo.entity.Book;
 import com.example.demo.repository.BookRepository;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 
 @ExtendWith(MockitoExtension.class)
 class BookServiceTest {
@@ -135,5 +138,17 @@ class BookServiceTest {
     assertEquals(1, result.size());
     assertTrue(result.get(0).getTitle().contains(keyword));
     verify(repository, times(1)).findByTitleContainingIgnoreCase(keyword);
+  }
+
+  @Test
+  void should_return_null_when_book_not_found() {
+      BookRepository repository = mock(BookRepository.class);
+      when(repository.findById(999)).thenReturn(Optional.empty());
+
+      BookService service = new BookService(repository);
+
+      Book result = service.getById(999);
+
+      assertNull(result);
   }
 }
