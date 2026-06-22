@@ -1,50 +1,80 @@
 package com.example.demo.endpoint.rest.controller;
-
-import com.example.demo.entity.Author;
-import com.example.demo.repository.AuthorRepository;
-import java.util.List;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+import java.util.List;
+import com.example.demo.entity.Author;
+import com.example.demo.service.AuthorService;
 
 @RestController
 @RequestMapping("/authors")
 public class AuthorController {
 
-  private final AuthorRepository authorRepository;
+private final AuthorService authorService;
 
-  public AuthorController(AuthorRepository authorRepository) {
-    this.authorRepository = authorRepository;
-  }
+public AuthorController(AuthorService authorService) {
+    this.authorService = authorService;
+}
 
-  @GetMapping
-  public String listAuthors(Model model) {
-    List<Author> authors = authorRepository.findAll();
-    model.addAttribute("authors", authors);
-    return "author-list";
-  }
+// GET /authors
+@GetMapping
+public ResponseEntity<List<Author>> getAllAuthors() {
+    return ResponseEntity.ok(authorService.getAll());
+}
 
-  @GetMapping("/new")
-  public String showCreateForm(Model model) {
-    model.addAttribute("author", new Author());
-    return "author-form";
-  }
+// GET /authors/{id}
+@GetMapping("/{id}")
+public ResponseEntity<?> getAuthorById(@PathVariable Integer id) {
+    try {
+        return ResponseEntity.ok(authorService.getById(id));
+    } catch (RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(e.getMessage());
+    }
+}
 
-  @PostMapping("/save")
-  public String saveAuthor(@ModelAttribute Author author) {
-    authorRepository.save(author);
-    return "redirect:/authors";
-  }
+// POST /authors
+@PostMapping
+public ResponseEntity<?> createAuthor(@RequestBody Author author) {
+    try {
+        Author created = authorService.create(author);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(created);
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(e.getMessage());
+    }
+}
 
-  @GetMapping("/{id}")
-  public String viewAuthor(@PathVariable Integer id, Model model) {
-    Author author = authorRepository.findById(id).orElse(null);
-    model.addAttribute("author", author);
-    return "author-detail.html";
-  }
+// PUT /authors/{id}
+@PutMapping("/{id}")
+public ResponseEntity<?> updateAuthor(
+        @PathVariable Integer id,
+        @RequestBody Author author) {
 
-  @GetMapping("/delete/{id}")
-  public String deleteAuthor(@PathVariable Integer id) {
-    authorRepository.deleteById(id);
-    return "redirect:/authors";
-  }
+    try {
+        Author updated = authorService.update(id, author);
+        return ResponseEntity.ok(updated);
+    } catch (RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(e.getMessage());
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(e.getMessage());
+    }
+}
+
+// DELETE /authors/{id}
+@DeleteMapping("/{id}")
+public ResponseEntity<?> deleteAuthor(@PathVariable Integer id) {
+    try {
+        authorService.getById(id);
+        authorService.delete(id);
+        return ResponseEntity.noContent().build();
+    } catch (RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(e.getMessage());
+    }
+}
+
 }

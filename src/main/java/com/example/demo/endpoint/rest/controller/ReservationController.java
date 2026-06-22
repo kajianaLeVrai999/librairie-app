@@ -1,88 +1,88 @@
 package com.example.demo.endpoint.rest.controller;
 
-import com.example.demo.entity.BookCopy;
-import com.example.demo.entity.Reservation;
-import com.example.demo.entity.ReservationStatus;
-import com.example.demo.repository.BookCopyRepository;
-import com.example.demo.repository.CustomerRepository;
-import com.example.demo.repository.ReservationRepository;
-import java.time.LocalDate;
-import java.util.List;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+import java.util.List;
+import com.example.demo.entity.Reservation;
+import com.example.demo.service.ReservationService;
 
 @RestController
 @RequestMapping("/reservations")
 public class ReservationController {
 
-  private final ReservationRepository reservationRepository;
-  private final BookCopyRepository bookCopyRepository;
-  private final CustomerRepository customerRepository;
+private final ReservationService reservationService;
 
-  public ReservationController(
-      ReservationRepository reservationRepository,
-      BookCopyRepository bookCopyRepository,
-      CustomerRepository customerRepository) {
-    this.reservationRepository = reservationRepository;
-    this.bookCopyRepository = bookCopyRepository;
-    this.customerRepository = customerRepository;
-  }
+public ReservationController(ReservationService reservationService) {
+    this.reservationService = reservationService;
+}
 
-  @GetMapping
-  public String listReservations(Model model) {
-    List<Reservation> reservations = reservationRepository.findAll();
-    model.addAttribute("reservations", reservations);
-    return "reservation-list";
-  }
+// GET /reservations
+@GetMapping
+public ResponseEntity<List<Reservation>> getAllReservations() {
+    return ResponseEntity.ok(reservationService.getAll());
+}
 
-  @GetMapping("/new")
-  public String showCreateForm(Model model) {
-    model.addAttribute("reservation", new Reservation());
-    model.addAttribute("customers", customerRepository.findAll());
-    model.addAttribute("bookCopies", bookCopyRepository.findAll());
-    return "reservation-form";
-  }
-
-  @PostMapping("/save")
-  public String saveReservation(@ModelAttribute Reservation reservation) {
-    reservation.setReservationDate(LocalDate.now());
-    reservation.setExpirationDate(LocalDate.now().plusDays(7));
-    reservation.setStatus(ReservationStatus.PENDING);
-
-    BookCopy bookCopy = reservation.getBookCopy();
-    if (bookCopy != null) {
-      bookCopy.setStatus(com.example.demo.entity.CopyStatus.RESERVED);
-      bookCopyRepository.save(bookCopy);
+// GET /reservations/{id}
+@GetMapping("/{id}")
+public ResponseEntity<?> getReservationById(@PathVariable String id) {
+    try {
+        return ResponseEntity.ok(reservationService.getById(id));
+    } catch (RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(e.getMessage());
     }
+}
 
-    reservationRepository.save(reservation);
-    return "redirect:/reservations";
-  }
+// POST /reservations
+@PostMapping
+public ResponseEntity<?> createReservation(
+        @RequestBody Reservation reservation) {
 
-  @GetMapping("/confirm/{id}")
-  public String confirmReservation(@PathVariable String id) {
-    Reservation reservation = reservationRepository.findById(id).orElse(null);
-    if (reservation != null) {
-      reservation.setStatus(ReservationStatus.CONFIRMED);
-      reservationRepository.save(reservation);
+    try {
+        Reservation created = reservationService.create(reservation);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(created);
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(e.getMessage());
     }
-    return "redirect:/reservations";
-  }
+}
 
-  @GetMapping("/cancel/{id}")
-  public String cancelReservation(@PathVariable String id) {
-    Reservation reservation = reservationRepository.findById(id).orElse(null);
-    if (reservation != null) {
-      reservation.setStatus(ReservationStatus.CANCELLED);
+// PATCH /reservations/{id}/confirm
+@PatchMapping("/{id}/confirm")
+public ResponseEntity<?> confirmReservation(
+        @PathVariable String id) {
 
-      BookCopy bookCopy = reservation.getBookCopy();
-      if (bookCopy != null) {
-        bookCopy.setStatus(com.example.demo.entity.CopyStatus.AVAILABLE);
-        bookCopyRepository.save(bookCopy);
-      }
-
-      reservationRepository.save(reservation);
+    try {
+        Reservation reservation = reservationService.confirm(id);
+        return ResponseEntity.ok(reservation);
+    } catch (RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(e.getMessage());
     }
-    return "redirect:/reservations";
-  }
+}
+
+// PATCH /reservations/{id}/cancel
+@PatchMapping("/{id}/cancel")
+public ResponseEntity<?> cancelReservation(
+        @PathVariable String id) {
+
+    try {
+        Reservation reservation = reservationService.cancel(id);
+        return ResponseEntity.ok(reservation);
+    } catch (RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(e.getMessage());
+    }
+}
+
+// GET /reservations/active
+@GetMapping("/active")
+public ResponseEntity<List<Reservation>> getActiveReservations() {
+    return ResponseEntity.ok(
+            reservationService.getActiveReservations());
+}
+
+
 }

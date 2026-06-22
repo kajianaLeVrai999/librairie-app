@@ -1,66 +1,80 @@
 package com.example.demo.endpoint.rest.controller;
 
-import com.example.demo.entity.BookCopy;
-import com.example.demo.entity.Sale;
-import com.example.demo.repository.BookCopyRepository;
-import com.example.demo.repository.CustomerRepository;
-import com.example.demo.repository.SaleRepository;
-import java.time.LocalDate;
-import java.util.List;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+import java.util.List;
+import java.time.LocalDate;
+import com.example.demo.entity.Sale;
+import com.example.demo.service.SaleService;
 
 @RestController
 @RequestMapping("/sales")
 public class SaleController {
 
-  private final SaleRepository saleRepository;
-  private final BookCopyRepository bookCopyRepository;
-  private final CustomerRepository customerRepository;
 
-  public SaleController(
-      SaleRepository saleRepository,
-      BookCopyRepository bookCopyRepository,
-      CustomerRepository customerRepository) {
-    this.saleRepository = saleRepository;
-    this.bookCopyRepository = bookCopyRepository;
-    this.customerRepository = customerRepository;
-  }
+private final SaleService saleService;
 
-  @GetMapping
-  public String listSales(Model model) {
-    List<Sale> sales = saleRepository.findAll();
-    model.addAttribute("sales", sales);
-    return "sale-list";
-  }
+public SaleController(SaleService saleService) {
+    this.saleService = saleService;
+}
 
-  @GetMapping("/new")
-  public String showCreateForm(Model model) {
-    model.addAttribute("sale", new Sale());
-    model.addAttribute("customers", customerRepository.findAll());
-    model.addAttribute("bookCopies", bookCopyRepository.findAll());
-    return "sale-form";
-  }
+// GET /sales
+@GetMapping
+public ResponseEntity<List<Sale>> getAllSales() {
+    return ResponseEntity.ok(saleService.getAll());
+}
 
-  @PostMapping("/save")
-  public String saveSale(@ModelAttribute Sale sale) {
-    sale.setSaleDate(LocalDate.now());
-
-    // Mettre à jour le statut de l'exemplaire
-    BookCopy bookCopy = sale.getBookCopy();
-    if (bookCopy != null) {
-      bookCopy.setStatus(com.example.demo.entity.CopyStatus.SOLD);
-      bookCopyRepository.save(bookCopy);
+// GET /sales/{id}
+@GetMapping("/{id}")
+public ResponseEntity<?> getSaleById(@PathVariable String id) {
+    try {
+        return ResponseEntity.ok(saleService.getById(id));
+    } catch (RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(e.getMessage());
     }
+}
 
-    saleRepository.save(sale);
-    return "redirect:/sales";
-  }
+// POST /sales
+@PostMapping
+public ResponseEntity<?> createSale(@RequestBody Sale sale) {
+    try {
+        Sale created = saleService.create(sale);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(created);
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(e.getMessage());
+    }
+}
 
-  @GetMapping("/{id}")
-  public String viewSale(@PathVariable String id, Model model) {
-    Sale sale = saleRepository.findById(id).orElse(null);
-    model.addAttribute("sale", sale);
-    return "sale-detail";
-  }
+// GET /sales/date?date=2026-06-22
+@GetMapping("/date")
+public ResponseEntity<?> getSalesByDate(
+        @RequestParam LocalDate date) {
+
+    try {
+        return ResponseEntity.ok(
+                saleService.getSalesByDate(date));
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("Invalid date format. Use YYYY-MM-DD");
+    }
+}
+
+// GET /sales/revenue?date=2026-06-22
+@GetMapping("/revenue")
+public ResponseEntity<?> getRevenueByDate(
+        @RequestParam LocalDate date) {
+
+    try {
+        return ResponseEntity.ok(
+                saleService.getTotalRevenueByDate(date));
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("Invalid date format. Use YYYY-MM-DD");
+    }
+}
+
 }
