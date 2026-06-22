@@ -138,14 +138,19 @@ class BookServiceTest {
   }
 
   @Test
-  void should_return_null_when_book_not_found() {
+  void should_throw_exception_when_book_not_found() {
     BookRepository repository = mock(BookRepository.class);
     when(repository.findById(999)).thenReturn(Optional.empty());
 
     BookService service = new BookService(repository);
 
-    Book result = service.getById(999);
+    RuntimeException exception =
+        assertThrows(
+            RuntimeException.class,
+            () -> {
+              service.getById(999);
+            });
 
-    assertNull(result);
+    assertEquals("Book not found", exception.getMessage());
   }
 }
