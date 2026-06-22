@@ -68,7 +68,8 @@ public class DashboardController {
 
       return "dashboard";
     } catch (Exception e) {
-      model.addAttribute("error", "Erreur lors du chargement du tableau de bord : " + e.getMessage());
+      model.addAttribute(
+          "error", "Erreur lors du chargement du tableau de bord : " + e.getMessage());
       model.addAttribute("totalBooks", 0);
       model.addAttribute("totalBookCopies", 0);
       model.addAttribute("totalCustomers", 0);

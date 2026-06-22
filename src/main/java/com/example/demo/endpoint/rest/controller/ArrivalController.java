@@ -11,52 +11,48 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/arrivals")
 public class ArrivalController {
 
-    private final ArrivalService arrivalService;
+  private final ArrivalService arrivalService;
 
-    public ArrivalController(ArrivalService arrivalService) {
-        this.arrivalService = arrivalService;
-    }
+  public ArrivalController(ArrivalService arrivalService) {
+    this.arrivalService = arrivalService;
+  }
 
-    // GET /arrivals
-    @GetMapping
-    public ResponseEntity<List<Arrival>> getAllArrivals() {
-        return ResponseEntity.ok(arrivalService.getAll());
-    }
+  // GET /arrivals
+  @GetMapping
+  public ResponseEntity<List<Arrival>> getAllArrivals() {
+    return ResponseEntity.ok(arrivalService.getAll());
+  }
 
-    // GET /arrivals/{id}
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getArrivalById(@PathVariable Integer id) {
-        try {
-            return ResponseEntity.ok(arrivalService.getById(id));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
-        }
+  // GET /arrivals/{id}
+  @GetMapping("/{id}")
+  public ResponseEntity<?> getArrivalById(@PathVariable Integer id) {
+    try {
+      return ResponseEntity.ok(arrivalService.getById(id));
+    } catch (RuntimeException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
+  }
 
-    // POST /arrivals
-    @PostMapping
-    public ResponseEntity<?> createArrival(@RequestBody Arrival arrival) {
-        try {
-            Arrival created = arrivalService.create(arrival);
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(created);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
-        }
+  // POST /arrivals
+  @PostMapping
+  public ResponseEntity<?> createArrival(@RequestBody Arrival arrival) {
+    try {
+      Arrival created = arrivalService.create(arrival);
+      return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
+  }
 
-    // DELETE /arrivals/{id}
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteArrival(@PathVariable Integer id) {
-        try {
-            arrivalService.getById(id); // vérifie que l'id existe
-            arrivalService.delete(id);
-            return ResponseEntity.noContent().build(); // 204
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
-        }
+  // DELETE /arrivals/{id}
+  @DeleteMapping("/{id}")
+  public ResponseEntity<?> deleteArrival(@PathVariable Integer id) {
+    try {
+      arrivalService.getById(id); // vérifie que l'id existe
+      arrivalService.delete(id);
+      return ResponseEntity.noContent().build(); // 204
+    } catch (RuntimeException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
+  }
 }
