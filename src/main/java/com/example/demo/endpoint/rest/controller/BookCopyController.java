@@ -2,94 +2,107 @@ package com.example.demo.endpoint.rest.controller;
 
 import com.example.demo.entity.BookCopy;
 import com.example.demo.entity.CopyStatus;
-import com.example.demo.repository.BookCopyRepository;
-import com.example.demo.repository.BookRepository;
+import com.example.demo.service.BookCopyService;
 import java.util.List;
-import org.springframework.ui.Model;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/bookcopies")
+@RequestMapping("/book-copies")
 public class BookCopyController {
 
-  private final BookCopyRepository bookCopyRepository;
-  private final BookRepository bookRepository;
+  private final BookCopyService bookCopyService;
 
-  public BookCopyController(BookCopyRepository bookCopyRepository, BookRepository bookRepository) {
-    this.bookCopyRepository = bookCopyRepository;
-    this.bookRepository = bookRepository;
+  public BookCopyController(BookCopyService bookCopyService) {
+    this.bookCopyService = bookCopyService;
   }
 
-  // Liste tous les exemplaires
+  // GET /book-copies
   @GetMapping
-  public String listBookCopies(Model model) {
-    List<BookCopy> bookCopies = bookCopyRepository.findAll();
-    model.addAttribute("bookCopies", bookCopies);
-    model.addAttribute("copyStatuses", CopyStatus.values());
-    return "bookcopy-list";
+  public ResponseEntity<List<BookCopy>> getAllCopies() {
+    return ResponseEntity.ok(bookCopyService.getAll());
   }
 
-  // Formulaire d'ajout d'exemplaire
-  @GetMapping("/new")
-  public String showCreateForm(Model model) {
-    model.addAttribute("bookCopy", new BookCopy());
-    model.addAttribute("books", bookRepository.findAll());
-    model.addAttribute("copyStatuses", CopyStatus.values());
-    return "bookcopy-form";
-  }
-
-  // Sauvegarde d'un nouvel exemplaire
-  @PostMapping("/save")
-  public String saveBookCopy(@ModelAttribute BookCopy bookCopy) {
-    bookCopyRepository.save(bookCopy);
-    return "redirect:/bookcopies";
-  }
-
-  // Détail d'un exemplaire
+  // GET /book-copies/{id}
   @GetMapping("/{id}")
-  public String viewBookCopy(@PathVariable Integer id, Model model) {
-    BookCopy bookCopy = bookCopyRepository.findById(id).orElse(null);
-    model.addAttribute("bookCopy", bookCopy);
-    model.addAttribute("copyStatuses", CopyStatus.values());
-    return "bookcopy-detail";
-  }
-
-  // Changer le statut d'un exemplaire
-  @GetMapping("/status/{id}")
-  public String updateStatusForm(@PathVariable Integer id, Model model) {
-    BookCopy bookCopy = bookCopyRepository.findById(id).orElse(null);
-    model.addAttribute("bookCopy", bookCopy);
-    model.addAttribute("copyStatuses", CopyStatus.values());
-    return "bookcopy-status.html";
-  }
-
-  @PostMapping("/status/{id}")
-  public String updateStatus(@PathVariable Integer id, @RequestParam CopyStatus status) {
-    BookCopy bookCopy = bookCopyRepository.findById(id).orElse(null);
-    if (bookCopy != null) {
-      bookCopy.setStatus(status);
-      bookCopyRepository.save(bookCopy);
+  public ResponseEntity<?> getCopyById(@PathVariable Integer id) {
+    try {
+      return ResponseEntity.ok(bookCopyService.getById(id));
+    } catch (RuntimeException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
-    return "redirect:/bookcopies";
   }
 
-  // Supprimer un exemplaire
-  @GetMapping("/delete/{id}")
-  public String deleteBookCopy(@PathVariable Integer id) {
-    bookCopyRepository.deleteById(id);
-    return "redirect:/bookcopies";
+  // POST /book-copies/book/{bookId}
+  @PostMapping("/book/{bookId}")
+  public ResponseEntity<?> createCopy(@PathVariable Integer bookId, @RequestBody BookCopy copy) {
+
+    try {
+      BookCopy created = bookCopyService.create(bookId, copy);
+      return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    } catch (RuntimeException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
   }
 
-  // Voir les exemplaires d'un livre spécifique
+  // POST /book-copies/book/{bookId}/multiple?quantity=5
+  @PostMapping("/book/{bookId}/multiple")
+  public ResponseEntity<?> createMultipleCopies(
+      @PathVariable Integer bookId, @RequestParam int quantity) {
+
+    try {
+      return ResponseEntity.status(HttpStatus.CREATED)
+          .body(bookCopyService.createMultiple(bookId, quantity));
+    } catch (RuntimeException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
+  }
+
+  // GET /book-copies/book/{bookId}
   @GetMapping("/book/{bookId}")
-  public String listCopiesByBook(@PathVariable Integer bookId, Model model) {
-    List<BookCopy> copies =
-        bookCopyRepository.findAll().stream()
-            .filter(copy -> copy.getBook() != null && copy.getBook().getId() == bookId) // ← corrigé
-            .toList();
-    model.addAttribute("book", bookRepository.findById(bookId).orElse(null));
-    model.addAttribute("bookCopies", copies);
-    model.addAttribute("copyStatuses", CopyStatus.values());
-    return "bookcopy-list";
+  public ResponseEntity<List<BookCopy>> getCopiesByBookId(@PathVariable Integer bookId) {
+
+    return ResponseEntity.ok(bookCopyService.getByBookId(bookId));
+  }
+
+  // GET /book-copies/available
+  @GetMapping("/available")
+  public ResponseEntity<List<BookCopy>> getAvailableCopies() {
+    return ResponseEntity.ok(bookCopyService.getAvailableCopies());
+  }
+
+  // PATCH /book-copies/{id}/status
+  @PatchMapping("/{id}/status")
+  public ResponseEntity<?> updateStatus(@PathVariable Integer id, @RequestParam CopyStatus status) {
+
+    try {
+      return ResponseEntity.ok(bookCopyService.updateStatus(id, status));
+    } catch (RuntimeException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid status");
+    }
+  }
+
+  // GET /book-copies/book/{bookId}/available-count
+  @GetMapping("/book/{bookId}/available-count")
+  public ResponseEntity<Long> countAvailableCopies(@PathVariable Integer bookId) {
+
+    return ResponseEntity.ok(bookCopyService.countAvailableByBookId(bookId));
+  }
+
+  // DELETE /book-copies/{id}
+  @DeleteMapping("/{id}")
+  public ResponseEntity<?> deleteCopy(@PathVariable Integer id) {
+    try {
+      bookCopyService.getById(id);
+      bookCopyService.delete(id);
+      return ResponseEntity.noContent().build();
+    } catch (RuntimeException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
   }
 }

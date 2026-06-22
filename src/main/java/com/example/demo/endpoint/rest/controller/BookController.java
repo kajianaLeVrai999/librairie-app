@@ -1,78 +1,79 @@
 package com.example.demo.endpoint.rest.controller;
 
 import com.example.demo.entity.Book;
-import com.example.demo.repository.AuthorRepository;
-import com.example.demo.repository.BookRepository;
-import com.example.demo.repository.CategoryRepository;
-import com.example.demo.service.GoogleBooksService;
+import com.example.demo.service.BookService;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import org.springframework.ui.Model;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/books")
 public class BookController {
 
-  private final BookRepository bookRepository;
-  private final CategoryRepository categoryRepository;
-  private final AuthorRepository authorRepository;
-  private final GoogleBooksService googleBooksService;
+  private final BookService bookService;
 
-  public BookController(
-      BookRepository bookRepository,
-      CategoryRepository categoryRepository,
-      AuthorRepository authorRepository,
-      GoogleBooksService googleBooksService) {
-    this.bookRepository = bookRepository;
-    this.categoryRepository = categoryRepository;
-    this.authorRepository = authorRepository;
-    this.googleBooksService = googleBooksService;
+  public BookController(BookService bookService) {
+    this.bookService = bookService;
   }
 
+  // GET /books
   @GetMapping
-  public String listBooks(Model model) {
-    List<Book> books = bookRepository.findAll();
-    model.addAttribute("books", books);
-    return "book-list";
+  public ResponseEntity<List<Book>> getAllBooks() {
+    return ResponseEntity.ok(bookService.getAll());
   }
 
-  @GetMapping("/new")
-  public String showCreateForm(Model model) {
-    model.addAttribute("book", new Book());
-    model.addAttribute("categories", categoryRepository.findAll());
-    model.addAttribute("authors", authorRepository.findAll());
-    return "book-form";
-  }
-
-  @PostMapping("/save")
-  public String saveBook(@ModelAttribute Book book) {
-    bookRepository.save(book);
-    return "redirect:/books";
-  }
-
+  // GET /books/{id}
   @GetMapping("/{id}")
-  public String viewBook(@PathVariable Integer id, Model model) {
-    Book book = bookRepository.findById(id).orElse(null);
-    model.addAttribute("book", book);
-    return "book-detail";
+  public ResponseEntity<?> getBookById(@PathVariable Integer id) {
+    try {
+      return ResponseEntity.ok(bookService.getById(id));
+    } catch (RuntimeException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
   }
 
-  @GetMapping("/delete/{id}")
-  public String deleteBook(@PathVariable Integer id) {
-    bookRepository.deleteById(id);
-    return "redirect:/books";
+  // POST /books
+  @PostMapping
+  public ResponseEntity<?> createBook(@RequestBody Book book) {
+    try {
+      Book created = bookService.create(book);
+      return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
   }
 
-  @PostMapping("/import-async")
-  @ResponseBody
-  public String importBookAsync(@RequestParam String isbn) {
-    String cleanIsbn = isbn.replaceAll("[\\s-]", "");
+  // PUT /books/{id}
+  @PutMapping("/{id}")
+  public ResponseEntity<?> updateBook(@PathVariable Integer id, @RequestBody Book book) {
 
-    CompletableFuture<Book> future = googleBooksService.fetchAndSaveBookByIsbn(cleanIsbn);
+    try {
+      Book updated = bookService.update(id, book);
+      return ResponseEntity.ok(updated);
+    } catch (RuntimeException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
+  }
 
-    return "Import lancé en arrière-plan pour l'ISBN: "
-        + cleanIsbn
-        + ". La page va se rafraîchir automatiquement dans quelques secondes.";
+  // DELETE /books/{id}
+  @DeleteMapping("/{id}")
+  public ResponseEntity<?> deleteBook(@PathVariable Integer id) {
+    try {
+      bookService.getById(id);
+      bookService.delete(id);
+      return ResponseEntity.noContent().build();
+    } catch (RuntimeException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
+  }
+
+  // GET /books/search?keyword=java
+  @GetMapping("/search")
+  public ResponseEntity<List<Book>> searchBooks(@RequestParam String keyword) {
+
+    return ResponseEntity.ok(bookService.search(keyword));
   }
 }

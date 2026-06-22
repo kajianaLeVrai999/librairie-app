@@ -1,78 +1,58 @@
 package com.example.demo.endpoint.rest.controller;
 
 import com.example.demo.entity.Arrival;
-import com.example.demo.entity.BookCopy;
-import com.example.demo.entity.CopyStatus;
-import com.example.demo.repository.ArrivalRepository;
-import com.example.demo.repository.BookCopyRepository;
-import com.example.demo.repository.BookRepository;
-import java.time.LocalDate;
+import com.example.demo.service.ArrivalService;
 import java.util.List;
-import org.springframework.ui.Model;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/arrivals")
 public class ArrivalController {
 
-  private final ArrivalRepository arrivalRepository;
-  private final BookRepository bookRepository;
-  private final BookCopyRepository bookCopyRepository;
+  private final ArrivalService arrivalService;
 
-  public ArrivalController(
-      ArrivalRepository arrivalRepository,
-      BookRepository bookRepository,
-      BookCopyRepository bookCopyRepository) {
-    this.arrivalRepository = arrivalRepository;
-    this.bookRepository = bookRepository;
-    this.bookCopyRepository = bookCopyRepository;
+  public ArrivalController(ArrivalService arrivalService) {
+    this.arrivalService = arrivalService;
   }
 
-  // Liste tous les arrivages
+  // GET /arrivals
   @GetMapping
-  public String listArrivals(Model model) {
-    List<Arrival> arrivals = arrivalRepository.findAll();
-    model.addAttribute("arrivals", arrivals);
-    return "arrival-list";
+  public ResponseEntity<List<Arrival>> getAllArrivals() {
+    return ResponseEntity.ok(arrivalService.getAll());
   }
 
-  // Formulaire d'ajout d'arrivage
-  @GetMapping("/new")
-  public String showCreateForm(Model model) {
-    model.addAttribute("arrival", new Arrival());
-    model.addAttribute("books", bookRepository.findAll());
-    return "arrival-form";
-  }
-
-  // Sauvegarde d'un arrivage (crée automatiquement les exemplaires)
-  @PostMapping("/save")
-  public String saveArrival(@ModelAttribute Arrival arrival) {
-    arrival.setArrivalDate(LocalDate.now());
-    Arrival savedArrival = arrivalRepository.save(arrival);
-
-    // Crée les exemplaires en fonction de la quantité
-    for (int i = 0; i < savedArrival.getQuantity(); i++) {
-      BookCopy bookCopy = new BookCopy();
-      bookCopy.setBook(savedArrival.getBook());
-      bookCopy.setStatus(CopyStatus.AVAILABLE);
-      bookCopyRepository.save(bookCopy);
-    }
-
-    return "redirect:/arrivals";
-  }
-
-  // Détail d'un arrivage
+  // GET /arrivals/{id}
   @GetMapping("/{id}")
-  public String viewArrival(@PathVariable Integer id, Model model) {
-    Arrival arrival = arrivalRepository.findById(id).orElse(null);
-    model.addAttribute("arrival", arrival);
-    return "arrival-detail";
+  public ResponseEntity<?> getArrivalById(@PathVariable Integer id) {
+    try {
+      return ResponseEntity.ok(arrivalService.getById(id));
+    } catch (RuntimeException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
   }
 
-  // Supprimer un arrivage
-  @GetMapping("/delete/{id}")
-  public String deleteArrival(@PathVariable Integer id) {
-    arrivalRepository.deleteById(id);
-    return "redirect:/arrivals";
+  // POST /arrivals
+  @PostMapping
+  public ResponseEntity<?> createArrival(@RequestBody Arrival arrival) {
+    try {
+      Arrival created = arrivalService.create(arrival);
+      return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
+  }
+
+  // DELETE /arrivals/{id}
+  @DeleteMapping("/{id}")
+  public ResponseEntity<?> deleteArrival(@PathVariable Integer id) {
+    try {
+      arrivalService.getById(id); // vérifie que l'id existe
+      arrivalService.delete(id);
+      return ResponseEntity.noContent().build(); // 204
+    } catch (RuntimeException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
   }
 }

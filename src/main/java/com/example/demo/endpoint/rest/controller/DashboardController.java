@@ -43,28 +43,42 @@ public class DashboardController {
 
   @GetMapping("/")
   public String home(Model model) {
-    model.addAttribute("totalBooks", bookRepository.count());
-    model.addAttribute("totalBookCopies", bookCopyRepository.count());
-    model.addAttribute("totalCustomers", customerRepository.count());
-    model.addAttribute("totalCategories", categoryRepository.count());
-    model.addAttribute("totalAuthors", authorRepository.count());
+    try {
+      model.addAttribute("totalBooks", bookRepository.count());
+      model.addAttribute("totalBookCopies", bookCopyRepository.count());
+      model.addAttribute("totalCustomers", customerRepository.count());
+      model.addAttribute("totalCategories", categoryRepository.count());
+      model.addAttribute("totalAuthors", authorRepository.count());
 
-    model.addAttribute("totalReservations", reservationRepository.count());
+      model.addAttribute("totalReservations", reservationRepository.count());
 
-    LocalDate today = LocalDate.now();
-    double todayRevenue =
-        saleRepository.findAll().stream()
-            .filter(sale -> sale.getSaleDate() != null && sale.getSaleDate().equals(today))
-            .mapToDouble(Sale::getTotalAmount)
-            .sum();
-    model.addAttribute("todayRevenue", todayRevenue);
+      LocalDate today = LocalDate.now();
+      double todayRevenue =
+          saleRepository.findAll().stream()
+              .filter(sale -> sale.getSaleDate() != null && sale.getSaleDate().equals(today))
+              .mapToDouble(Sale::getTotalAmount)
+              .sum();
+      model.addAttribute("todayRevenue", todayRevenue);
 
-    long todaySalesCount =
-        saleRepository.findAll().stream()
-            .filter(sale -> sale.getSaleDate() != null && sale.getSaleDate().equals(today))
-            .count();
-    model.addAttribute("todaySalesCount", todaySalesCount);
+      long todaySalesCount =
+          saleRepository.findAll().stream()
+              .filter(sale -> sale.getSaleDate() != null && sale.getSaleDate().equals(today))
+              .count();
+      model.addAttribute("todaySalesCount", todaySalesCount);
 
-    return "dashboard";
+      return "dashboard";
+    } catch (Exception e) {
+      model.addAttribute(
+          "error", "Erreur lors du chargement du tableau de bord : " + e.getMessage());
+      model.addAttribute("totalBooks", 0);
+      model.addAttribute("totalBookCopies", 0);
+      model.addAttribute("totalCustomers", 0);
+      model.addAttribute("totalCategories", 0);
+      model.addAttribute("totalAuthors", 0);
+      model.addAttribute("totalReservations", 0);
+      model.addAttribute("todayRevenue", 0.0);
+      model.addAttribute("todaySalesCount", 0);
+      return "dashboard";
+    }
   }
 }

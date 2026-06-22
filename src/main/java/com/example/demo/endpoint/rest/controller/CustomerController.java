@@ -1,50 +1,85 @@
 package com.example.demo.endpoint.rest.controller;
 
 import com.example.demo.entity.Customer;
-import com.example.demo.repository.CustomerRepository;
+import com.example.demo.service.CustomerService;
 import java.util.List;
-import org.springframework.ui.Model;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/customers")
 public class CustomerController {
 
-  private final CustomerRepository customerRepository;
+  private final CustomerService customerService;
 
-  public CustomerController(CustomerRepository customerRepository) {
-    this.customerRepository = customerRepository;
+  public CustomerController(CustomerService customerService) {
+    this.customerService = customerService;
   }
 
+  // GET /customers
   @GetMapping
-  public String listCustomers(Model model) {
-    List<Customer> customers = customerRepository.findAll();
-    model.addAttribute("customers", customers);
-    return "customer-list";
+  public ResponseEntity<List<Customer>> getAllCustomers() {
+    return ResponseEntity.ok(customerService.getAll());
   }
 
-  @GetMapping("/new")
-  public String showCreateForm(Model model) {
-    model.addAttribute("customer", new Customer());
-    return "customer-form";
-  }
-
-  @PostMapping("/save")
-  public String saveCustomer(@ModelAttribute Customer customer) {
-    customerRepository.save(customer);
-    return "redirect:/customers";
-  }
-
+  // GET /customers/{id}
   @GetMapping("/{id}")
-  public String viewCustomer(@PathVariable Integer id, Model model) {
-    Customer customer = customerRepository.findById(id).orElse(null);
-    model.addAttribute("customer", customer);
-    return "customer-detail";
+  public ResponseEntity<?> getCustomerById(@PathVariable Integer id) {
+    try {
+      return ResponseEntity.ok(customerService.getById(id));
+    } catch (RuntimeException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
   }
 
-  @GetMapping("/delete/{id}")
-  public String deleteCustomer(@PathVariable Integer id) {
-    customerRepository.deleteById(id);
-    return "redirect:/customers";
+  // GET /customers/email/{email}
+  @GetMapping("/email/{email}")
+  public ResponseEntity<?> getCustomerByEmail(@PathVariable String email) {
+    Customer customer = customerService.findByEmail(email);
+
+    if (customer == null) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer not found");
+    }
+
+    return ResponseEntity.ok(customer);
+  }
+
+  // POST /customers
+  @PostMapping
+  public ResponseEntity<?> createCustomer(@RequestBody Customer customer) {
+    try {
+      Customer created = customerService.create(customer);
+      return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
+  }
+
+  // PUT /customers/{id}
+  @PutMapping("/{id}")
+  public ResponseEntity<?> updateCustomer(
+      @PathVariable Integer id, @RequestBody Customer customer) {
+
+    try {
+      Customer updated = customerService.update(id, customer);
+      return ResponseEntity.ok(updated);
+    } catch (RuntimeException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
+  }
+
+  // DELETE /customers/{id}
+  @DeleteMapping("/{id}")
+  public ResponseEntity<?> deleteCustomer(@PathVariable Integer id) {
+    try {
+      customerService.getById(id);
+      customerService.delete(id);
+      return ResponseEntity.noContent().build();
+    } catch (RuntimeException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
   }
 }
