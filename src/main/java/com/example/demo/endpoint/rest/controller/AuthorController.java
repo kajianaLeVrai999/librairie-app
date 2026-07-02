@@ -40,6 +40,7 @@ public class AuthorController {
       Author created = authorService.create(author);
       return ResponseEntity.status(HttpStatus.CREATED).body(created);
     } catch (Exception e) {
+      e.printStackTrace();
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
   }
