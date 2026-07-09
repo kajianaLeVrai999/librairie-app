@@ -11,97 +11,78 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/authors")
 public class AuthorController {
 
-    private final AuthorService authorService;
+  private final AuthorService authorService;
 
-    public AuthorController(AuthorService authorService) {
-        this.authorService = authorService;
+  public AuthorController(AuthorService authorService) {
+    this.authorService = authorService;
+  }
+
+  // GET /authors
+  @GetMapping
+  public ResponseEntity<List<AuthorDTO>> getAllAuthors() {
+    return ResponseEntity.ok(authorService.getAll());
+  }
+
+  // GET /authors/{id}
+  @GetMapping("/{id}")
+  public ResponseEntity<?> getAuthorById(@PathVariable Integer id) {
+
+    try {
+      return ResponseEntity.ok(authorService.getById(id));
+
+    } catch (RuntimeException e) {
+
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
+  }
 
+  // POST /authors
+  @PostMapping
+  public ResponseEntity<?> createAuthor(@RequestBody AuthorDTO dto) {
 
-    // GET /authors
-    @GetMapping
-    public ResponseEntity<List<AuthorDTO>> getAllAuthors() {
-        return ResponseEntity.ok(authorService.getAll());
+    try {
+      AuthorDTO created = authorService.create(dto);
+
+      return ResponseEntity.status(HttpStatus.CREATED).body(created);
+
+    } catch (Exception e) {
+
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
+  }
 
+  // PUT /authors/{id}
+  @PutMapping("/{id}")
+  public ResponseEntity<?> updateAuthor(@PathVariable Integer id, @RequestBody AuthorDTO dto) {
 
-    // GET /authors/{id}
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getAuthorById(@PathVariable Integer id) {
+    try {
+      AuthorDTO updated = authorService.update(id, dto);
 
-        try {
-            return ResponseEntity.ok(authorService.getById(id));
+      return ResponseEntity.ok(updated);
 
-        } catch (RuntimeException e) {
+    } catch (RuntimeException e) {
 
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
-        }
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+
+    } catch (Exception e) {
+
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
+  }
 
+  // DELETE /authors/{id}
+  @DeleteMapping("/{id}")
+  public ResponseEntity<?> deleteAuthor(@PathVariable Integer id) {
 
-    // POST /authors
-    @PostMapping
-    public ResponseEntity<?> createAuthor(@RequestBody AuthorDTO dto) {
+    try {
+      authorService.getById(id);
+      authorService.delete(id);
 
-        try {
-            AuthorDTO created = authorService.create(dto);
+      return ResponseEntity.noContent().build();
 
-            return ResponseEntity
-                    .status(HttpStatus.CREATED)
-                    .body(created);
+    } catch (RuntimeException e) {
 
-        } catch (Exception e) {
-
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
-        }
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
-
-
-    // PUT /authors/{id}
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateAuthor(
-            @PathVariable Integer id,
-            @RequestBody AuthorDTO dto) {
-
-        try {
-            AuthorDTO updated = authorService.update(id, dto);
-
-            return ResponseEntity.ok(updated);
-
-        } catch (RuntimeException e) {
-
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
-
-        } catch (Exception e) {
-
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
-        }
-    }
-
-
-    // DELETE /authors/{id}
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteAuthor(@PathVariable Integer id) {
-
-        try {
-            authorService.getById(id);
-            authorService.delete(id);
-
-            return ResponseEntity.noContent().build();
-
-        } catch (RuntimeException e) {
-
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
-        }
-    }
+  }
 }

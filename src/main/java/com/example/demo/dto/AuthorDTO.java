@@ -14,7 +14,8 @@ public class AuthorDTO {
 
   public AuthorDTO() {}
 
-  public AuthorDTO(int id, String firstName, String lastName, String biography, String nationality) {
+  public AuthorDTO(
+      int id, String firstName, String lastName, String biography, String nationality) {
     this.id = id;
     this.firstName = firstName;
     this.lastName = lastName;

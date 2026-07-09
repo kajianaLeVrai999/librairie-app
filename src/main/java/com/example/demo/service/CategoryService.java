@@ -9,95 +9,72 @@ import org.springframework.stereotype.Service;
 @Service
 public class CategoryService {
 
-    private final CategoryRepository categoryRepository;
+  private final CategoryRepository categoryRepository;
 
+  public CategoryService(CategoryRepository categoryRepository) {
+    this.categoryRepository = categoryRepository;
+  }
 
-    public CategoryService(CategoryRepository categoryRepository) {
-        this.categoryRepository = categoryRepository;
-    }
+  // CREATE
+  public CategoryDTO create(CategoryDTO dto) {
 
+    Category category = new Category();
 
+    category.setName(dto.getName());
+    category.setDescription(dto.getDescription());
 
-    // CREATE
-    public CategoryDTO create(CategoryDTO dto) {
+    Category saved = categoryRepository.save(category);
 
-        Category category = new Category();
+    return toDTO(saved);
+  }
 
-        category.setName(dto.getName());
-        category.setDescription(dto.getDescription());
+  // GET ALL
+  public List<CategoryDTO> getAll() {
 
+    return categoryRepository.findAll().stream().map(this::toDTO).toList();
+  }
 
-        Category saved = categoryRepository.save(category);
+  // GET BY ID
+  public CategoryDTO getById(Long id) {
 
-        return toDTO(saved);
-    }
+    Category category =
+        categoryRepository
+            .findById(id)
+            .orElseThrow(() -> new RuntimeException("Category not found"));
 
+    return toDTO(category);
+  }
 
+  // UPDATE
+  public CategoryDTO update(Long id, CategoryDTO dto) {
 
-    // GET ALL
-    public List<CategoryDTO> getAll() {
+    Category existing =
+        categoryRepository
+            .findById(id)
+            .orElseThrow(() -> new RuntimeException("Category not found"));
 
-        return categoryRepository.findAll()
-                .stream()
-                .map(this::toDTO)
-                .toList();
-    }
+    existing.setName(dto.getName());
+    existing.setDescription(dto.getDescription());
 
+    Category updated = categoryRepository.save(existing);
 
+    return toDTO(updated);
+  }
 
-    // GET BY ID
-    public CategoryDTO getById(Long id) {
+  // DELETE
+  public void delete(Long id) {
 
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Category not found")
-                );
+    Category category =
+        categoryRepository
+            .findById(id)
+            .orElseThrow(() -> new RuntimeException("Category not found"));
 
-        return toDTO(category);
-    }
+    categoryRepository.delete(category);
+  }
 
+  // ENTITY -> DTO
+  private CategoryDTO toDTO(Category category) {
 
-
-    // UPDATE
-    public CategoryDTO update(Long id, CategoryDTO dto) {
-
-        Category existing = categoryRepository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Category not found")
-                );
-
-
-        existing.setName(dto.getName());
-        existing.setDescription(dto.getDescription());
-
-
-        Category updated = categoryRepository.save(existing);
-
-        return toDTO(updated);
-    }
-
-
-
-    // DELETE
-    public void delete(Long id) {
-
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Category not found")
-                );
-
-        categoryRepository.delete(category);
-    }
-
-
-
-    // ENTITY -> DTO
-    private CategoryDTO toDTO(Category category) {
-
-        return new CategoryDTO(
-                category.getId(),
-                category.getName(),
-                category.getDescription()
-        );
-    }
+    return new CategoryDTO(category.getId(), category.getName(), category.getDescription());
+  }
 }

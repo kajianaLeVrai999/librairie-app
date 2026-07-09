@@ -9,121 +9,96 @@ import org.springframework.stereotype.Service;
 @Service
 public class CustomerService {
 
-    private final CustomerRepository customerRepository;
+  private final CustomerRepository customerRepository;
 
+  public CustomerService(CustomerRepository customerRepository) {
+    this.customerRepository = customerRepository;
+  }
 
-    public CustomerService(CustomerRepository customerRepository) {
-        this.customerRepository = customerRepository;
-    }
+  // CREATE
+  public CustomerDTO create(CustomerDTO dto) {
 
+    Customer customer = new Customer();
 
+    customer.setFirstName(dto.getFirstName());
+    customer.setLastName(dto.getLastName());
+    customer.setEmail(dto.getEmail());
+    customer.setPhone(dto.getPhone());
+    customer.setAddress(dto.getAddress());
 
-    // CREATE
-    public CustomerDTO create(CustomerDTO dto) {
+    Customer saved = customerRepository.save(customer);
 
-        Customer customer = new Customer();
+    return toDTO(saved);
+  }
 
-        customer.setFirstName(dto.getFirstName());
-        customer.setLastName(dto.getLastName());
-        customer.setEmail(dto.getEmail());
-        customer.setPhone(dto.getPhone());
-        customer.setAddress(dto.getAddress());
+  // GET ALL
+  public List<CustomerDTO> getAll() {
 
+    return customerRepository.findAll().stream().map(this::toDTO).toList();
+  }
 
-        Customer saved = customerRepository.save(customer);
+  // GET BY ID
+  public CustomerDTO getById(Integer id) {
 
-        return toDTO(saved);
-    }
+    Customer customer =
+        customerRepository
+            .findById(id)
+            .orElseThrow(() -> new RuntimeException("Customer not found"));
 
+    return toDTO(customer);
+  }
 
+  // GET BY EMAIL
+  public CustomerDTO findByEmail(String email) {
 
-    // GET ALL
-    public List<CustomerDTO> getAll() {
+    Customer customer =
+        customerRepository.findAll().stream()
+            .filter(c -> c.getEmail().equals(email))
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("Customer not found"));
 
-        return customerRepository.findAll()
-                .stream()
-                .map(this::toDTO)
-                .toList();
-    }
+    return toDTO(customer);
+  }
 
+  // UPDATE
+  public CustomerDTO update(Integer id, CustomerDTO dto) {
 
+    Customer existing =
+        customerRepository
+            .findById(id)
+            .orElseThrow(() -> new RuntimeException("Customer not found"));
 
-    // GET BY ID
-    public CustomerDTO getById(Integer id) {
+    existing.setFirstName(dto.getFirstName());
+    existing.setLastName(dto.getLastName());
+    existing.setEmail(dto.getEmail());
+    existing.setPhone(dto.getPhone());
+    existing.setAddress(dto.getAddress());
 
-        Customer customer = customerRepository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Customer not found")
-                );
+    Customer updated = customerRepository.save(existing);
 
-        return toDTO(customer);
-    }
+    return toDTO(updated);
+  }
 
+  // DELETE
+  public void delete(Integer id) {
 
+    Customer customer =
+        customerRepository
+            .findById(id)
+            .orElseThrow(() -> new RuntimeException("Customer not found"));
 
-    // GET BY EMAIL
-    public CustomerDTO findByEmail(String email) {
+    customerRepository.delete(customer);
+  }
 
-        Customer customer = customerRepository.findAll()
-                .stream()
-                .filter(c -> c.getEmail().equals(email))
-                .findFirst()
-                .orElseThrow(() ->
-                        new RuntimeException("Customer not found")
-                );
+  // ENTITY -> DTO
+  private CustomerDTO toDTO(Customer customer) {
 
-
-        return toDTO(customer);
-    }
-
-
-
-    // UPDATE
-    public CustomerDTO update(Integer id, CustomerDTO dto) {
-
-        Customer existing = customerRepository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Customer not found")
-                );
-
-
-        existing.setFirstName(dto.getFirstName());
-        existing.setLastName(dto.getLastName());
-        existing.setEmail(dto.getEmail());
-        existing.setPhone(dto.getPhone());
-        existing.setAddress(dto.getAddress());
-
-
-        Customer updated = customerRepository.save(existing);
-
-        return toDTO(updated);
-    }
-
-
-
-    // DELETE
-    public void delete(Integer id) {
-
-        Customer customer = customerRepository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Customer not found")
-                );
-
-        customerRepository.delete(customer);
-    }
-
-
-
-    // ENTITY -> DTO
-    private CustomerDTO toDTO(Customer customer) {
-
-        return new CustomerDTO(
-                customer.getId(),
-                customer.getFirstName(),
-                customer.getLastName(),
-                customer.getEmail(),
-                customer.getPhone(),
-                customer.getAddress()
-        );
-    }
+    return new CustomerDTO(
+        customer.getId(),
+        customer.getFirstName(),
+        customer.getLastName(),
+        customer.getEmail(),
+        customer.getPhone(),
+        customer.getAddress());
+  }
 }

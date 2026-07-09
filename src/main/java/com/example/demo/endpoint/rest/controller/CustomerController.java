@@ -11,148 +11,96 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/customers")
 public class CustomerController {
 
+  private final CustomerService customerService;
 
-    private final CustomerService customerService;
+  public CustomerController(CustomerService customerService) {
+    this.customerService = customerService;
+  }
 
+  // GET /customers
+  @GetMapping
+  public ResponseEntity<List<CustomerDTO>> getAllCustomers() {
 
-    public CustomerController(CustomerService customerService) {
-        this.customerService = customerService;
+    return ResponseEntity.ok(customerService.getAll());
+  }
+
+  // GET /customers/{id}
+  @GetMapping("/{id}")
+  public ResponseEntity<?> getCustomerById(@PathVariable Integer id) {
+
+    try {
+
+      return ResponseEntity.ok(customerService.getById(id));
+
+    } catch (RuntimeException e) {
+
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
+  }
 
+  // GET /customers/email/{email}
+  @GetMapping("/email/{email}")
+  public ResponseEntity<?> getCustomerByEmail(@PathVariable String email) {
 
+    try {
 
-    // GET /customers
-    @GetMapping
-    public ResponseEntity<List<CustomerDTO>> getAllCustomers() {
+      return ResponseEntity.ok(customerService.findByEmail(email));
 
-        return ResponseEntity.ok(
-                customerService.getAll()
-        );
+    } catch (RuntimeException e) {
+
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
+  }
 
+  // POST /customers
+  @PostMapping
+  public ResponseEntity<?> createCustomer(@RequestBody CustomerDTO dto) {
 
+    try {
 
-    // GET /customers/{id}
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getCustomerById(
-            @PathVariable Integer id) {
+      CustomerDTO created = customerService.create(dto);
 
-        try {
+      return ResponseEntity.status(HttpStatus.CREATED).body(created);
 
-            return ResponseEntity.ok(
-                    customerService.getById(id)
-            );
+    } catch (Exception e) {
 
-
-        } catch(RuntimeException e){
-
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
-        }
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
+  }
 
+  // PUT /customers/{id}
+  @PutMapping("/{id}")
+  public ResponseEntity<?> updateCustomer(@PathVariable Integer id, @RequestBody CustomerDTO dto) {
 
+    try {
 
-    // GET /customers/email/{email}
-    @GetMapping("/email/{email}")
-    public ResponseEntity<?> getCustomerByEmail(
-            @PathVariable String email) {
+      CustomerDTO updated = customerService.update(id, dto);
 
-        try {
+      return ResponseEntity.ok(updated);
 
-            return ResponseEntity.ok(
-                    customerService.findByEmail(email)
-            );
+    } catch (RuntimeException e) {
 
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
 
-        } catch(RuntimeException e){
+    } catch (Exception e) {
 
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
-        }
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
+  }
 
+  // DELETE /customers/{id}
+  @DeleteMapping("/{id}")
+  public ResponseEntity<?> deleteCustomer(@PathVariable Integer id) {
 
+    try {
 
-    // POST /customers
-    @PostMapping
-    public ResponseEntity<?> createCustomer(
-            @RequestBody CustomerDTO dto) {
+      customerService.delete(id);
 
-        try {
+      return ResponseEntity.noContent().build();
 
-            CustomerDTO created =
-                    customerService.create(dto);
+    } catch (RuntimeException e) {
 
-
-            return ResponseEntity
-                    .status(HttpStatus.CREATED)
-                    .body(created);
-
-
-        } catch(Exception e){
-
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
-        }
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
-
-
-
-    // PUT /customers/{id}
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateCustomer(
-            @PathVariable Integer id,
-            @RequestBody CustomerDTO dto) {
-
-
-        try {
-
-            CustomerDTO updated =
-                    customerService.update(id, dto);
-
-
-            return ResponseEntity.ok(updated);
-
-
-        } catch(RuntimeException e){
-
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
-
-
-        } catch(Exception e){
-
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
-        }
-    }
-
-
-
-    // DELETE /customers/{id}
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteCustomer(
-            @PathVariable Integer id) {
-
-
-        try {
-
-            customerService.delete(id);
-
-            return ResponseEntity.noContent().build();
-
-
-        } catch(RuntimeException e){
-
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
-        }
-    }
+  }
 }

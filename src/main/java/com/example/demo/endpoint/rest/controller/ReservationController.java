@@ -11,127 +11,82 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/reservations")
 public class ReservationController {
 
+  private final ReservationService reservationService;
 
-    private final ReservationService reservationService;
+  public ReservationController(ReservationService reservationService) {
 
+    this.reservationService = reservationService;
+  }
 
-    public ReservationController(
-            ReservationService reservationService) {
+  // GET /reservations
+  @GetMapping
+  public ResponseEntity<List<ReservationDTO>> getAllReservations() {
 
-        this.reservationService = reservationService;
+    return ResponseEntity.ok(reservationService.getAll());
+  }
+
+  // GET /reservations/{id}
+  @GetMapping("/{id}")
+  public ResponseEntity<?> getReservationById(@PathVariable String id) {
+
+    try {
+
+      return ResponseEntity.ok(reservationService.getById(id));
+
+    } catch (RuntimeException e) {
+
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
+  }
 
+  // POST /reservations
+  @PostMapping
+  public ResponseEntity<?> createReservation(@RequestBody ReservationDTO dto) {
 
+    try {
 
-    // GET /reservations
-    @GetMapping
-    public ResponseEntity<List<ReservationDTO>> getAllReservations(){
+      ReservationDTO created = reservationService.create(dto);
 
-        return ResponseEntity.ok(
-                reservationService.getAll()
-        );
+      return ResponseEntity.status(HttpStatus.CREATED).body(created);
+
+    } catch (Exception e) {
+
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
+  }
 
+  // PATCH /reservations/{id}/confirm
+  @PatchMapping("/{id}/confirm")
+  public ResponseEntity<?> confirmReservation(@PathVariable String id) {
 
+    try {
 
-    // GET /reservations/{id}
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getReservationById(
-            @PathVariable String id){
+      return ResponseEntity.ok(reservationService.confirm(id));
 
-        try{
+    } catch (RuntimeException e) {
 
-            return ResponseEntity.ok(
-                    reservationService.getById(id)
-            );
-
-
-        }catch(RuntimeException e){
-
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
-        }
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
+  }
 
+  // PATCH /reservations/{id}/cancel
+  @PatchMapping("/{id}/cancel")
+  public ResponseEntity<?> cancelReservation(@PathVariable String id) {
 
+    try {
 
-    // POST /reservations
-    @PostMapping
-    public ResponseEntity<?> createReservation(
-            @RequestBody ReservationDTO dto){
+      return ResponseEntity.ok(reservationService.cancel(id));
 
-        try{
+    } catch (RuntimeException e) {
 
-            ReservationDTO created =
-                    reservationService.create(dto);
-
-
-            return ResponseEntity
-                    .status(HttpStatus.CREATED)
-                    .body(created);
-
-
-        }catch(Exception e){
-
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
-        }
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
+  }
 
+  // GET /reservations/active
+  @GetMapping("/active")
+  public ResponseEntity<List<ReservationDTO>> getActiveReservations() {
 
-
-    // PATCH /reservations/{id}/confirm
-    @PatchMapping("/{id}/confirm")
-    public ResponseEntity<?> confirmReservation(
-            @PathVariable String id){
-
-        try{
-
-            return ResponseEntity.ok(
-                    reservationService.confirm(id)
-            );
-
-
-        }catch(RuntimeException e){
-
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
-        }
-    }
-
-
-
-    // PATCH /reservations/{id}/cancel
-    @PatchMapping("/{id}/cancel")
-    public ResponseEntity<?> cancelReservation(
-            @PathVariable String id){
-
-        try{
-
-            return ResponseEntity.ok(
-                    reservationService.cancel(id)
-            );
-
-
-        }catch(RuntimeException e){
-
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
-        }
-    }
-
-
-
-    // GET /reservations/active
-    @GetMapping("/active")
-    public ResponseEntity<List<ReservationDTO>> getActiveReservations(){
-
-        return ResponseEntity.ok(
-                reservationService.getActiveReservations()
-        );
-    }
+    return ResponseEntity.ok(reservationService.getActiveReservations());
+  }
 }

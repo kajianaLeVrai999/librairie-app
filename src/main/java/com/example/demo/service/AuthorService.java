@@ -9,85 +9,75 @@ import org.springframework.stereotype.Service;
 @Service
 public class AuthorService {
 
-    private final AuthorRepository authorRepository;
+  private final AuthorRepository authorRepository;
 
-    public AuthorService(AuthorRepository authorRepository) {
-        this.authorRepository = authorRepository;
-    }
+  public AuthorService(AuthorRepository authorRepository) {
+    this.authorRepository = authorRepository;
+  }
 
+  // Créer un auteur
+  public AuthorDTO create(AuthorDTO dto) {
 
-    // Créer un auteur
-    public AuthorDTO create(AuthorDTO dto) {
+    Author author = new Author();
 
-        Author author = new Author();
+    author.setFirstName(dto.getFirstName());
+    author.setLastName(dto.getLastName());
+    author.setBiography(dto.getBiography());
+    author.setNationality(dto.getNationality());
 
-        author.setFirstName(dto.getFirstName());
-        author.setLastName(dto.getLastName());
-        author.setBiography(dto.getBiography());
-        author.setNationality(dto.getNationality());
+    Author saved = authorRepository.save(author);
 
-        Author saved = authorRepository.save(author);
+    return toDTO(saved);
+  }
 
-        return toDTO(saved);
-    }
+  // Récupérer tous les auteurs
+  public List<AuthorDTO> getAll() {
 
+    return authorRepository.findAll().stream().map(this::toDTO).toList();
+  }
 
-    // Récupérer tous les auteurs
-    public List<AuthorDTO> getAll() {
+  // Récupérer un auteur par ID
+  public AuthorDTO getById(Integer id) {
 
-        return authorRepository.findAll()
-                .stream()
-                .map(this::toDTO)
-                .toList();
-    }
+    Author author =
+        authorRepository.findById(id).orElseThrow(() -> new RuntimeException("Author not found"));
 
+    return toDTO(author);
+  }
 
-    // Récupérer un auteur par ID
-    public AuthorDTO getById(Integer id) {
+  // Modifier un auteur
+  public AuthorDTO update(Integer id, AuthorDTO dto) {
 
-        Author author = authorRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Author not found"));
+    Author existing =
+        authorRepository.findById(id).orElseThrow(() -> new RuntimeException("Author not found"));
 
-        return toDTO(author);
-    }
+    existing.setFirstName(dto.getFirstName());
+    existing.setLastName(dto.getLastName());
+    existing.setBiography(dto.getBiography());
+    existing.setNationality(dto.getNationality());
 
+    Author updated = authorRepository.save(existing);
 
-    // Modifier un auteur
-    public AuthorDTO update(Integer id, AuthorDTO dto) {
+    return toDTO(updated);
+  }
 
-        Author existing = authorRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Author not found"));
+  // Supprimer un auteur
+  public void delete(Integer id) {
 
-        existing.setFirstName(dto.getFirstName());
-        existing.setLastName(dto.getLastName());
-        existing.setBiography(dto.getBiography());
-        existing.setNationality(dto.getNationality());
+    Author author =
+        authorRepository.findById(id).orElseThrow(() -> new RuntimeException("Author not found"));
 
-        Author updated = authorRepository.save(existing);
+    authorRepository.delete(author);
+  }
 
-        return toDTO(updated);
-    }
+  // Conversion Entity -> DTO
+  private AuthorDTO toDTO(Author author) {
 
-
-    // Supprimer un auteur
-    public void delete(Integer id) {
-
-        Author author = authorRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Author not found"));
-
-        authorRepository.delete(author);
-    }
-
-
-    // Conversion Entity -> DTO
-    private AuthorDTO toDTO(Author author) {
-
-        return new AuthorDTO(
-                author.getId(),
-                author.getFirstName(),
-                author.getLastName(),
-                author.getBiography(),
-                author.getNationality()
-        );
-    }
+    return new AuthorDTO(
+        author.getId(),
+        author.getFirstName(),
+        author.getLastName(),
+        author.getBiography(),
+        author.getNationality());
+  }
 }

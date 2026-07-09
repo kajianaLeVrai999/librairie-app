@@ -11,129 +11,82 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/genders")
 public class GenderController {
 
+  private final GenderService genderService;
 
-    private final GenderService genderService;
+  public GenderController(GenderService genderService) {
+    this.genderService = genderService;
+  }
 
+  // GET /genders
+  @GetMapping
+  public ResponseEntity<List<GenderDTO>> getAllGenders() {
 
-    public GenderController(GenderService genderService) {
-        this.genderService = genderService;
+    return ResponseEntity.ok(genderService.getAll());
+  }
+
+  // GET /genders/{id}
+  @GetMapping("/{id}")
+  public ResponseEntity<?> getGenderById(@PathVariable Long id) {
+
+    try {
+
+      return ResponseEntity.ok(genderService.getById(id));
+
+    } catch (RuntimeException e) {
+
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
+  }
 
+  // POST /genders
+  @PostMapping
+  public ResponseEntity<?> createGender(@RequestBody GenderDTO dto) {
 
+    try {
 
-    // GET /genders
-    @GetMapping
-    public ResponseEntity<List<GenderDTO>> getAllGenders() {
+      GenderDTO created = genderService.create(dto);
 
-        return ResponseEntity.ok(
-                genderService.getAll()
-        );
+      return ResponseEntity.status(HttpStatus.CREATED).body(created);
+
+    } catch (Exception e) {
+
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
+  }
 
+  // PUT /genders/{id}
+  @PutMapping("/{id}")
+  public ResponseEntity<?> updateGender(@PathVariable Long id, @RequestBody GenderDTO dto) {
 
+    try {
 
-    // GET /genders/{id}
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getGenderById(
-            @PathVariable Long id) {
+      GenderDTO updated = genderService.update(id, dto);
 
-        try {
+      return ResponseEntity.ok(updated);
 
-            return ResponseEntity.ok(
-                    genderService.getById(id)
-            );
+    } catch (RuntimeException e) {
 
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
 
-        } catch(RuntimeException e){
+    } catch (Exception e) {
 
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
-        }
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
+  }
 
+  // DELETE /genders/{id}
+  @DeleteMapping("/{id}")
+  public ResponseEntity<?> deleteGender(@PathVariable Long id) {
 
+    try {
 
-    // POST /genders
-    @PostMapping
-    public ResponseEntity<?> createGender(
-            @RequestBody GenderDTO dto) {
+      genderService.delete(id);
 
+      return ResponseEntity.noContent().build();
 
-        try {
+    } catch (RuntimeException e) {
 
-            GenderDTO created =
-                    genderService.create(dto);
-
-
-            return ResponseEntity
-                    .status(HttpStatus.CREATED)
-                    .body(created);
-
-
-        } catch(Exception e){
-
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
-        }
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
-
-
-
-    // PUT /genders/{id}
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateGender(
-            @PathVariable Long id,
-            @RequestBody GenderDTO dto) {
-
-
-        try {
-
-            GenderDTO updated =
-                    genderService.update(id, dto);
-
-
-            return ResponseEntity.ok(updated);
-
-
-        } catch(RuntimeException e){
-
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
-
-
-        } catch(Exception e){
-
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
-        }
-    }
-
-
-
-    // DELETE /genders/{id}
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteGender(
-            @PathVariable Long id) {
-
-
-        try {
-
-            genderService.delete(id);
-
-            return ResponseEntity
-                    .noContent()
-                    .build();
-
-
-        } catch(RuntimeException e){
-
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
-        }
-    }
+  }
 }

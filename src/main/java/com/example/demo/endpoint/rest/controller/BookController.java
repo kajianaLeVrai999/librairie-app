@@ -11,126 +11,88 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/books")
 public class BookController {
 
+  private final BookService bookService;
 
-    private final BookService bookService;
+  public BookController(BookService bookService) {
+    this.bookService = bookService;
+  }
 
+  // GET /books
+  @GetMapping
+  public ResponseEntity<List<BookDTO>> getAllBooks() {
 
-    public BookController(BookService bookService) {
-        this.bookService = bookService;
+    return ResponseEntity.ok(bookService.getAll());
+  }
+
+  // GET /books/{id}
+  @GetMapping("/{id}")
+  public ResponseEntity<?> getBookById(@PathVariable Integer id) {
+
+    try {
+
+      return ResponseEntity.ok(bookService.getById(id));
+
+    } catch (RuntimeException e) {
+
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
+  }
 
+  // POST /books
+  @PostMapping
+  public ResponseEntity<?> createBook(@RequestBody BookDTO dto) {
 
-    // GET /books
-    @GetMapping
-    public ResponseEntity<List<BookDTO>> getAllBooks() {
+    try {
 
-        return ResponseEntity.ok(bookService.getAll());
+      BookDTO created = bookService.create(dto);
+
+      return ResponseEntity.status(HttpStatus.CREATED).body(created);
+
+    } catch (Exception e) {
+
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
+  }
 
+  // PUT /books/{id}
+  @PutMapping("/{id}")
+  public ResponseEntity<?> updateBook(@PathVariable Integer id, @RequestBody BookDTO dto) {
 
+    try {
 
-    // GET /books/{id}
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getBookById(@PathVariable Integer id) {
+      return ResponseEntity.ok(bookService.update(id, dto));
 
-        try {
+    } catch (RuntimeException e) {
 
-            return ResponseEntity.ok(bookService.getById(id));
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
 
-        } catch (RuntimeException e) {
+    } catch (Exception e) {
 
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
-        }
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
+  }
 
+  // DELETE /books/{id}
+  @DeleteMapping("/{id}")
+  public ResponseEntity<?> deleteBook(@PathVariable Integer id) {
 
+    try {
 
-    // POST /books
-    @PostMapping
-    public ResponseEntity<?> createBook(@RequestBody BookDTO dto) {
+      bookService.getById(id);
+      bookService.delete(id);
 
-        try {
+      return ResponseEntity.noContent().build();
 
-            BookDTO created = bookService.create(dto);
+    } catch (RuntimeException e) {
 
-            return ResponseEntity
-                    .status(HttpStatus.CREATED)
-                    .body(created);
-
-
-        } catch (Exception e) {
-
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
-        }
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
+  }
 
+  // GET /books/search?keyword=java
+  @GetMapping("/search")
+  public ResponseEntity<List<BookDTO>> searchBooks(@RequestParam String keyword) {
 
-
-    // PUT /books/{id}
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateBook(
-            @PathVariable Integer id,
-            @RequestBody BookDTO dto) {
-
-
-        try {
-
-            return ResponseEntity.ok(
-                    bookService.update(id, dto)
-            );
-
-
-        } catch (RuntimeException e) {
-
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
-
-
-        } catch (Exception e) {
-
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
-        }
-    }
-
-
-
-    // DELETE /books/{id}
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteBook(@PathVariable Integer id) {
-
-        try {
-
-            bookService.getById(id);
-            bookService.delete(id);
-
-            return ResponseEntity.noContent().build();
-
-
-        } catch (RuntimeException e) {
-
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
-        }
-    }
-
-
-
-    // GET /books/search?keyword=java
-    @GetMapping("/search")
-    public ResponseEntity<List<BookDTO>> searchBooks(
-            @RequestParam String keyword) {
-
-
-        return ResponseEntity.ok(
-                bookService.search(keyword)
-        );
-    }
+    return ResponseEntity.ok(bookService.search(keyword));
+  }
 }
