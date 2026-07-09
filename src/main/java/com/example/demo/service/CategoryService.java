@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.CategoryDTO;
 import com.example.demo.entity.Category;
 import com.example.demo.repository.CategoryRepository;
 import java.util.List;
@@ -8,34 +9,95 @@ import org.springframework.stereotype.Service;
 @Service
 public class CategoryService {
 
-  private final CategoryRepository categoryRepository;
+    private final CategoryRepository categoryRepository;
 
-  public CategoryService(CategoryRepository categoryRepository) {
-    this.categoryRepository = categoryRepository;
-  }
 
-  public Category create(Category category) {
-    return categoryRepository.save(category);
-  }
+    public CategoryService(CategoryRepository categoryRepository) {
+        this.categoryRepository = categoryRepository;
+    }
 
-  public List<Category> getAll() {
-    return categoryRepository.findAll();
-  }
 
-  public Category getById(Long id) {
-    return categoryRepository
-        .findById(id)
-        .orElseThrow(() -> new RuntimeException("Category not found"));
-  }
 
-  public Category update(Long id, Category category) {
-    Category existing = getById(id);
-    existing.setName(category.getName());
-    existing.setDescription(category.getDescription());
-    return categoryRepository.save(existing);
-  }
+    // CREATE
+    public CategoryDTO create(CategoryDTO dto) {
 
-  public void delete(Long id) {
-    categoryRepository.deleteById(id);
-  }
+        Category category = new Category();
+
+        category.setName(dto.getName());
+        category.setDescription(dto.getDescription());
+
+
+        Category saved = categoryRepository.save(category);
+
+        return toDTO(saved);
+    }
+
+
+
+    // GET ALL
+    public List<CategoryDTO> getAll() {
+
+        return categoryRepository.findAll()
+                .stream()
+                .map(this::toDTO)
+                .toList();
+    }
+
+
+
+    // GET BY ID
+    public CategoryDTO getById(Long id) {
+
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Category not found")
+                );
+
+        return toDTO(category);
+    }
+
+
+
+    // UPDATE
+    public CategoryDTO update(Long id, CategoryDTO dto) {
+
+        Category existing = categoryRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Category not found")
+                );
+
+
+        existing.setName(dto.getName());
+        existing.setDescription(dto.getDescription());
+
+
+        Category updated = categoryRepository.save(existing);
+
+        return toDTO(updated);
+    }
+
+
+
+    // DELETE
+    public void delete(Long id) {
+
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Category not found")
+                );
+
+        categoryRepository.delete(category);
+    }
+
+
+
+    // ENTITY -> DTO
+    private CategoryDTO toDTO(Category category) {
+
+        return new CategoryDTO(
+                category.getId(),
+                category.getName(),
+                category.getDescription()
+        );
+    }
 }
