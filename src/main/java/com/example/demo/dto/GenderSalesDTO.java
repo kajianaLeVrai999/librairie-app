@@ -10,8 +10,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GenderSalesDTO {
-    private Long genderId;
-    private String genderName;
-    private Long totalSales;
-    private Double totalRevenue;
+  private Long genderId;
+  private String genderName;
+  private Long totalSales;
+  private Double totalRevenue;
 }
