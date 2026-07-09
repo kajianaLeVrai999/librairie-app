@@ -97,6 +97,27 @@ public class BookCopyController {
     return ResponseEntity.ok(bookCopyService.countAvailableByBookId(bookId));
   }
 
+  // GET stock total d'un livre (hors exemplaires vendus)
+  @GetMapping("/book/{bookId}/stock")
+  public ResponseEntity<Long> getBookStock(@PathVariable Integer bookId) {
+
+    return ResponseEntity.ok(bookCopyService.getBookStock(bookId));
+  }
+
+  // GET stock disponible d'une édition
+  @GetMapping("/book/{bookId}/edition-stock")
+  public ResponseEntity<Long> getEditionStock(@PathVariable Integer bookId) {
+
+    return ResponseEntity.ok(bookCopyService.getEditionStock(bookId));
+  }
+
+  // GET livres avec un stock faible (<= 3)
+  @GetMapping("/low-stock")
+  public ResponseEntity<List<BookCopyDTO>> getLowStockBooks() {
+
+    return ResponseEntity.ok(bookCopyService.getLowStockBooks());
+  }
+
   // DELETE
   @DeleteMapping("/{id}")
   public ResponseEntity<?> deleteCopy(@PathVariable Integer id) {

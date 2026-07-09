@@ -24,10 +24,12 @@ public class BookCopyService {
   public BookCopyDTO create(Integer bookId, BookCopyDTO dto) {
     Book book =
         bookRepository.findById(bookId).orElseThrow(() -> new RuntimeException("Book not found"));
+
     BookCopy copy = new BookCopy();
     copy.setBook(book);
     copy.setStatus(dto.getStatus());
     copy.setFormat(dto.getFormat());
+
     BookCopy saved = bookCopyRepository.save(copy);
     return toDTO(saved);
   }
@@ -35,13 +37,16 @@ public class BookCopyService {
   public List<BookCopyDTO> createMultiple(Integer bookId, int quantity) {
     Book book =
         bookRepository.findById(bookId).orElseThrow(() -> new RuntimeException("Book not found"));
+
     List<BookCopy> copies = new ArrayList<>();
+
     for (int i = 0; i < quantity; i++) {
       BookCopy copy = new BookCopy();
       copy.setBook(book);
       copy.setStatus(CopyStatus.AVAILABLE);
       copies.add(bookCopyRepository.save(copy));
     }
+
     return copies.stream().map(this::toDTO).toList();
   }
 
@@ -54,12 +59,13 @@ public class BookCopyService {
         bookCopyRepository
             .findById(id)
             .orElseThrow(() -> new RuntimeException("BookCopy not found"));
+
     return toDTO(copy);
   }
 
   public List<BookCopyDTO> getByBookId(Integer bookId) {
     return bookCopyRepository.findAll().stream()
-        .filter(copy -> copy.getBook() != null && copy.getBook().getId() == bookId) // ← CORRIGÉ
+        .filter(copy -> copy.getBook() != null && copy.getBook().getId() == bookId)
         .map(this::toDTO)
         .toList();
   }
@@ -76,8 +82,11 @@ public class BookCopyService {
         bookCopyRepository
             .findById(id)
             .orElseThrow(() -> new RuntimeException("BookCopy not found"));
+
     copy.setStatus(status);
+
     BookCopy updated = bookCopyRepository.save(copy);
+
     return toDTO(updated);
   }
 
@@ -85,6 +94,7 @@ public class BookCopyService {
     if (!bookCopyRepository.existsById(id)) {
       throw new RuntimeException("BookCopy not found");
     }
+
     bookCopyRepository.deleteById(id);
   }
 
@@ -94,15 +104,44 @@ public class BookCopyService {
         .count();
   }
 
+  // Stock total d'un livre (hors exemplaires vendus)
+  public long getBookStock(Integer bookId) {
+    return bookCopyRepository.countStockByBookId(bookId);
+  }
+
+  // Stock disponible d'une édition
+  public long getEditionStock(Integer bookId) {
+    return bookCopyRepository.countAvailableStock(bookId);
+  }
+
+  // Livres dont le stock est inférieur ou égal à 3
+  public List<BookCopyDTO> getLowStockBooks() {
+
+    List<Book> books = bookCopyRepository.findBooksWithLowStock();
+
+    return books.stream()
+        .map(
+            book -> {
+              BookCopyDTO dto = new BookCopyDTO();
+              dto.setBookId(book.getId());
+              dto.setBookTitle(book.getTitle());
+              return dto;
+            })
+        .toList();
+  }
+
   private BookCopyDTO toDTO(BookCopy copy) {
     BookCopyDTO dto = new BookCopyDTO();
+
     dto.setId(copy.getId());
     dto.setStatus(copy.getStatus());
     dto.setFormat(copy.getFormat());
+
     if (copy.getBook() != null) {
       dto.setBookId(copy.getBook().getId());
       dto.setBookTitle(copy.getBook().getTitle());
     }
+
     return dto;
   }
 }
