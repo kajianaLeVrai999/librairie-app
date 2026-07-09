@@ -1,6 +1,6 @@
 package com.example.demo.endpoint.rest.controller;
 
-import com.example.demo.entity.Reservation;
+import com.example.demo.dto.ReservationDTO;
 import com.example.demo.service.ReservationService;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -14,33 +14,43 @@ public class ReservationController {
   private final ReservationService reservationService;
 
   public ReservationController(ReservationService reservationService) {
+
     this.reservationService = reservationService;
   }
 
   // GET /reservations
   @GetMapping
-  public ResponseEntity<List<Reservation>> getAllReservations() {
+  public ResponseEntity<List<ReservationDTO>> getAllReservations() {
+
     return ResponseEntity.ok(reservationService.getAll());
   }
 
   // GET /reservations/{id}
   @GetMapping("/{id}")
   public ResponseEntity<?> getReservationById(@PathVariable String id) {
+
     try {
+
       return ResponseEntity.ok(reservationService.getById(id));
+
     } catch (RuntimeException e) {
+
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
   }
 
   // POST /reservations
   @PostMapping
-  public ResponseEntity<?> createReservation(@RequestBody Reservation reservation) {
+  public ResponseEntity<?> createReservation(@RequestBody ReservationDTO dto) {
 
     try {
-      Reservation created = reservationService.create(reservation);
+
+      ReservationDTO created = reservationService.create(dto);
+
       return ResponseEntity.status(HttpStatus.CREATED).body(created);
+
     } catch (Exception e) {
+
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
   }
@@ -50,9 +60,11 @@ public class ReservationController {
   public ResponseEntity<?> confirmReservation(@PathVariable String id) {
 
     try {
-      Reservation reservation = reservationService.confirm(id);
-      return ResponseEntity.ok(reservation);
+
+      return ResponseEntity.ok(reservationService.confirm(id));
+
     } catch (RuntimeException e) {
+
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
   }
@@ -62,16 +74,19 @@ public class ReservationController {
   public ResponseEntity<?> cancelReservation(@PathVariable String id) {
 
     try {
-      Reservation reservation = reservationService.cancel(id);
-      return ResponseEntity.ok(reservation);
+
+      return ResponseEntity.ok(reservationService.cancel(id));
+
     } catch (RuntimeException e) {
+
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
   }
 
   // GET /reservations/active
   @GetMapping("/active")
-  public ResponseEntity<List<Reservation>> getActiveReservations() {
+  public ResponseEntity<List<ReservationDTO>> getActiveReservations() {
+
     return ResponseEntity.ok(reservationService.getActiveReservations());
   }
 }

@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.AuthorDTO;
 import com.example.demo.entity.Author;
 import com.example.demo.repository.AuthorRepository;
 import java.util.List;
@@ -14,30 +15,69 @@ public class AuthorService {
     this.authorRepository = authorRepository;
   }
 
-  public Author create(Author author) {
-    return authorRepository.save(author);
+  // Créer un auteur
+  public AuthorDTO create(AuthorDTO dto) {
+
+    Author author = new Author();
+
+    author.setFirstName(dto.getFirstName());
+    author.setLastName(dto.getLastName());
+    author.setBiography(dto.getBiography());
+    author.setNationality(dto.getNationality());
+
+    Author saved = authorRepository.save(author);
+
+    return toDTO(saved);
   }
 
-  public List<Author> getAll() {
-    return authorRepository.findAll();
+  // Récupérer tous les auteurs
+  public List<AuthorDTO> getAll() {
+
+    return authorRepository.findAll().stream().map(this::toDTO).toList();
   }
 
-  public Author getById(Integer id) {
-    return authorRepository
-        .findById(id)
-        .orElseThrow(() -> new RuntimeException("Author not found"));
+  // Récupérer un auteur par ID
+  public AuthorDTO getById(Integer id) {
+
+    Author author =
+        authorRepository.findById(id).orElseThrow(() -> new RuntimeException("Author not found"));
+
+    return toDTO(author);
   }
 
-  public Author update(Integer id, Author author) {
-    Author existing = getById(id);
-    existing.setFirstName(author.getFirstName());
-    existing.setLastName(author.getLastName());
-    existing.setBiography(author.getBiography());
-    existing.setNationality(author.getNationality());
-    return authorRepository.save(existing);
+  // Modifier un auteur
+  public AuthorDTO update(Integer id, AuthorDTO dto) {
+
+    Author existing =
+        authorRepository.findById(id).orElseThrow(() -> new RuntimeException("Author not found"));
+
+    existing.setFirstName(dto.getFirstName());
+    existing.setLastName(dto.getLastName());
+    existing.setBiography(dto.getBiography());
+    existing.setNationality(dto.getNationality());
+
+    Author updated = authorRepository.save(existing);
+
+    return toDTO(updated);
   }
 
+  // Supprimer un auteur
   public void delete(Integer id) {
-    authorRepository.deleteById(id);
+
+    Author author =
+        authorRepository.findById(id).orElseThrow(() -> new RuntimeException("Author not found"));
+
+    authorRepository.delete(author);
+  }
+
+  // Conversion Entity -> DTO
+  private AuthorDTO toDTO(Author author) {
+
+    return new AuthorDTO(
+        author.getId(),
+        author.getFirstName(),
+        author.getLastName(),
+        author.getBiography(),
+        author.getNationality());
   }
 }

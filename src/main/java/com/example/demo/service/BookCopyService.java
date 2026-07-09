@@ -1,10 +1,13 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.BookCopyDTO;
+import com.example.demo.dto.BookDTO;
 import com.example.demo.entity.Book;
 import com.example.demo.entity.BookCopy;
 import com.example.demo.entity.CopyStatus;
 import com.example.demo.repository.BookCopyRepository;
 import com.example.demo.repository.BookRepository;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
@@ -15,75 +18,133 @@ public class BookCopyService {
   private final BookRepository bookRepository;
 
   public BookCopyService(BookCopyRepository copyRepository, BookRepository bookRepository) {
+
     this.copyRepository = copyRepository;
     this.bookRepository = bookRepository;
   }
 
-  // Créer un exemplaire pour un livre
-  public BookCopy create(Integer bookId, BookCopy copy) {
+  // Créer un exemplaire
+  public BookCopyDTO create(Integer bookId, BookCopyDTO dto) {
+
     Book book =
         bookRepository.findById(bookId).orElseThrow(() -> new RuntimeException("Book not found"));
+
+    BookCopy copy = new BookCopy();
+
     copy.setBook(book);
-    return copyRepository.save(copy);
+    copy.setStatus(dto.getStatus());
+    copy.setFormat(dto.getFormat());
+
+    BookCopy saved = copyRepository.save(copy);
+
+    return toDTO(saved);
   }
 
-  // Créer plusieurs exemplaires (utile pour les arrivages)
-  public List<BookCopy> createMultiple(Integer bookId, int quantity) {
+  // Créer plusieurs exemplaires (arrivage)
+  public List<BookCopyDTO> createMultiple(Integer bookId, int quantity) {
+
     Book book =
         bookRepository.findById(bookId).orElseThrow(() -> new RuntimeException("Book not found"));
 
-    List<BookCopy> copies = new java.util.ArrayList<>();
+    List<BookCopyDTO> result = new ArrayList<>();
+
     for (int i = 0; i < quantity; i++) {
+
       BookCopy copy = new BookCopy();
+
       copy.setBook(book);
       copy.setStatus(CopyStatus.AVAILABLE);
-      copies.add(copyRepository.save(copy));
+
+      BookCopy saved = copyRepository.save(copy);
+
+      result.add(toDTO(saved));
     }
-    return copies;
+
+    return result;
   }
 
-  // Récupérer tous les exemplaires
-  public List<BookCopy> getAll() {
-    return copyRepository.findAll();
+  // GET ALL
+  public List<BookCopyDTO> getAll() {
+
+    return copyRepository.findAll().stream().map(this::toDTO).toList();
   }
 
-  // Récupérer un exemplaire par ID
-  public BookCopy getById(Integer id) {
-    return copyRepository
-        .findById(id)
-        .orElseThrow(() -> new RuntimeException("BookCopy not found"));
+  // GET BY ID
+  public BookCopyDTO getById(Integer id) {
+
+    BookCopy copy =
+        copyRepository.findById(id).orElseThrow(() -> new RuntimeException("BookCopy not found"));
+
+    return toDTO(copy);
   }
 
-  // Récupérer les exemplaires d'un livre
-  public List<BookCopy> getByBookId(Integer bookId) {
+  // Exemplaires d'un livre
+  public List<BookCopyDTO> getByBookId(Integer bookId) {
+
     return copyRepository.findAll().stream()
-        .filter(copy -> copy.getBook() != null && copy.getBook().getId() == bookId) // ← corrigé
+        .filter(copy -> copy.getBook() != null && copy.getBook().getId() == bookId)
+        .map(this::toDTO)
         .toList();
   }
 
-  // Récupérer les exemplaires disponibles
-  public List<BookCopy> getAvailableCopies() {
+  // Exemplaires disponibles
+  public List<BookCopyDTO> getAvailableCopies() {
+
     return copyRepository.findAll().stream()
         .filter(copy -> copy.getStatus() == CopyStatus.AVAILABLE)
+        .map(this::toDTO)
         .toList();
   }
 
-  // Mettre à jour le statut d'un exemplaire
-  public BookCopy updateStatus(Integer id, CopyStatus status) {
-    BookCopy copy = getById(id);
+  // Modifier statut
+  public BookCopyDTO updateStatus(Integer id, CopyStatus status) {
+
+    BookCopy copy =
+        copyRepository.findById(id).orElseThrow(() -> new RuntimeException("BookCopy not found"));
+
     copy.setStatus(status);
-    return copyRepository.save(copy);
+
+    return toDTO(copyRepository.save(copy));
   }
 
-  // Supprimer un exemplaire
+  // DELETE
   public void delete(Integer id) {
-    copyRepository.deleteById(id);
+
+    BookCopy copy =
+        copyRepository.findById(id).orElseThrow(() -> new RuntimeException("BookCopy not found"));
+
+    copyRepository.delete(copy);
   }
 
-  // Compter les exemplaires disponibles d'un livre
+  // Compter disponibles
   public long countAvailableByBookId(Integer bookId) {
-    return getByBookId(bookId).stream()
-        .filter(copy -> copy.getStatus() == CopyStatus.AVAILABLE)
+
+    return copyRepository.findAll().stream()
+        .filter(
+            copy -> copy.getBook().getId() == bookId && copy.getStatus() == CopyStatus.AVAILABLE)
         .count();
+  }
+
+  // ENTITY -> DTO
+  private BookCopyDTO toDTO(BookCopy copy) {
+
+    BookCopyDTO dto = new BookCopyDTO();
+
+    dto.setId(copy.getId());
+    dto.setStatus(copy.getStatus());
+    dto.setFormat(copy.getFormat());
+
+    if (copy.getBook() != null) {
+
+      BookDTO bookDTO = new BookDTO();
+
+      bookDTO.setId(copy.getBook().getId());
+      bookDTO.setTitle(copy.getBook().getTitle());
+      bookDTO.setIsbn(copy.getBook().getIsbn());
+
+      dto.setBook(bookDTO);
+    }
+
+    return dto;
   }
 }

@@ -1,6 +1,6 @@
 package com.example.demo.endpoint.rest.controller;
 
-import com.example.demo.entity.Arrival;
+import com.example.demo.dto.ArrivalDTO;
 import com.example.demo.service.ArrivalService;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -19,7 +19,7 @@ public class ArrivalController {
 
   // GET /arrivals
   @GetMapping
-  public ResponseEntity<List<Arrival>> getAllArrivals() {
+  public ResponseEntity<List<ArrivalDTO>> getAllArrivals() {
     return ResponseEntity.ok(arrivalService.getAll());
   }
 
@@ -35,10 +35,12 @@ public class ArrivalController {
 
   // POST /arrivals
   @PostMapping
-  public ResponseEntity<?> createArrival(@RequestBody Arrival arrival) {
+  public ResponseEntity<?> createArrival(@RequestBody ArrivalDTO dto) {
     try {
-      Arrival created = arrivalService.create(arrival);
+      ArrivalDTO created = arrivalService.create(dto);
+
       return ResponseEntity.status(HttpStatus.CREATED).body(created);
+
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
@@ -48,9 +50,11 @@ public class ArrivalController {
   @DeleteMapping("/{id}")
   public ResponseEntity<?> deleteArrival(@PathVariable Integer id) {
     try {
-      arrivalService.getById(id); // vérifie que l'id existe
+      arrivalService.getById(id);
       arrivalService.delete(id);
-      return ResponseEntity.noContent().build(); // 204
+
+      return ResponseEntity.noContent().build();
+
     } catch (RuntimeException e) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
