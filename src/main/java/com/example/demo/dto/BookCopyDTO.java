@@ -8,16 +8,16 @@ import lombok.Setter;
 @Getter
 @Setter
 public class BookCopyDTO {
-  private int id;
-  private BookDTO book;
+  private Integer id;
   private CopyStatus status;
   private BookFormat format;
+  private Integer bookId;
+  private String bookTitle;
 
   public BookCopyDTO() {}
 
-  public BookCopyDTO(int id, BookDTO book, CopyStatus status, BookFormat format) {
+  public BookCopyDTO(Integer id, CopyStatus status, BookFormat format) {
     this.id = id;
-    this.book = book;
     this.status = status;
     this.format = format;
   }

@@ -26,90 +26,75 @@ public class ReservationService {
       ReservationRepository reservationRepository,
       BookCopyRepository bookCopyRepository,
       CustomerRepository customerRepository) {
-
     this.reservationRepository = reservationRepository;
     this.bookCopyRepository = bookCopyRepository;
     this.customerRepository = customerRepository;
   }
 
-  // CREATE
   public ReservationDTO create(ReservationDTO dto) {
-
     Customer customer =
         customerRepository
-            .findById(dto.getCustomer().getId())
+            .findById(dto.getCustomerId())
             .orElseThrow(() -> new RuntimeException("Customer not found"));
 
     BookCopy bookCopy =
         bookCopyRepository
-            .findById(dto.getBookCopy().getId())
+            .findById(dto.getBookCopyId())
             .orElseThrow(() -> new RuntimeException("BookCopy not found"));
 
     Reservation reservation = new Reservation();
-
     reservation.setCustomer(customer);
     reservation.setBookCopy(bookCopy);
-
     reservation.setReservationDate(LocalDate.now());
     reservation.setExpirationDate(LocalDate.now().plusDays(7));
-
     reservation.setStatus(ReservationStatus.PENDING);
 
     bookCopy.setStatus(CopyStatus.RESERVED);
     bookCopyRepository.save(bookCopy);
 
     Reservation saved = reservationRepository.save(reservation);
-
     return toDTO(saved);
   }
 
-  // GET ALL
   public List<ReservationDTO> getAll() {
-
     return reservationRepository.findAll().stream().map(this::toDTO).toList();
   }
 
-  // GET BY ID
   public ReservationDTO getById(String id) {
-
     Reservation reservation =
         reservationRepository
             .findById(id)
             .orElseThrow(() -> new RuntimeException("Reservation not found"));
-
     return toDTO(reservation);
   }
 
-  // CONFIRM
   public ReservationDTO confirm(String id) {
-
-    Reservation reservation = getEntityById(id);
-
+    Reservation reservation =
+        reservationRepository
+            .findById(id)
+            .orElseThrow(() -> new RuntimeException("Reservation not found"));
     reservation.setStatus(ReservationStatus.CONFIRMED);
-
-    return toDTO(reservationRepository.save(reservation));
+    Reservation saved = reservationRepository.save(reservation);
+    return toDTO(saved);
   }
 
-  // CANCEL
   public ReservationDTO cancel(String id) {
-
-    Reservation reservation = getEntityById(id);
-
+    Reservation reservation =
+        reservationRepository
+            .findById(id)
+            .orElseThrow(() -> new RuntimeException("Reservation not found"));
     reservation.setStatus(ReservationStatus.CANCELLED);
 
     if (reservation.getBookCopy() != null) {
-
       reservation.getBookCopy().setStatus(CopyStatus.AVAILABLE);
-
       bookCopyRepository.save(reservation.getBookCopy());
     }
 
-    return toDTO(reservationRepository.save(reservation));
+    Reservation saved = reservationRepository.save(reservation);
+    return toDTO(saved);
   }
 
-  // ACTIVE RESERVATIONS
   public List<ReservationDTO> getActiveReservations() {
-
     return reservationRepository.findAll().stream()
         .filter(
             r ->
@@ -119,49 +104,33 @@ public class ReservationService {
         .toList();
   }
 
-  private Reservation getEntityById(String id) {
-
-    return reservationRepository
-        .findById(id)
-        .orElseThrow(() -> new RuntimeException("Reservation not found"));
-  }
-
-  // ENTITY -> DTO
   private ReservationDTO toDTO(Reservation reservation) {
-
     ReservationDTO dto = new ReservationDTO();
-
     dto.setId(reservation.getId());
     dto.setReservationDate(reservation.getReservationDate());
     dto.setExpirationDate(reservation.getExpirationDate());
     dto.setStatus(reservation.getStatus());
 
     if (reservation.getCustomer() != null) {
-
-      Customer customer = reservation.getCustomer();
-
+      dto.setCustomerId(reservation.getCustomer().getId());
       CustomerDTO customerDTO = new CustomerDTO();
-
+      Customer customer = reservation.getCustomer();
       customerDTO.setId(customer.getId());
       customerDTO.setFirstName(customer.getFirstName());
       customerDTO.setLastName(customer.getLastName());
       customerDTO.setEmail(customer.getEmail());
       customerDTO.setPhone(customer.getPhone());
       customerDTO.setAddress(customer.getAddress());
-
       dto.setCustomer(customerDTO);
     }
 
     if (reservation.getBookCopy() != null) {
-
-      BookCopy copy = reservation.getBookCopy();
-
+      dto.setBookCopyId(reservation.getBookCopy().getId());
       BookCopyDTO copyDTO = new BookCopyDTO();
-
+      BookCopy copy = reservation.getBookCopy();
       copyDTO.setId(copy.getId());
       copyDTO.setStatus(copy.getStatus());
       copyDTO.setFormat(copy.getFormat());
-
       dto.setBookCopy(copyDTO);
     }
 

@@ -12,6 +12,9 @@ public class ReservationDTO {
   private LocalDate reservationDate;
   private LocalDate expirationDate;
   private ReservationStatus status;
+  private Integer customerId;
+  private Integer bookCopyId;
+
   private CustomerDTO customer;
   private BookCopyDTO bookCopy;
 
@@ -22,13 +25,13 @@ public class ReservationDTO {
       LocalDate reservationDate,
       LocalDate expirationDate,
       ReservationStatus status,
-      CustomerDTO customer,
-      BookCopyDTO bookCopy) {
+      Integer customerId,
+      Integer bookCopyId) {
     this.id = id;
     this.reservationDate = reservationDate;
     this.expirationDate = expirationDate;
     this.status = status;
-    this.customer = customer;
-    this.bookCopy = bookCopy;
+    this.customerId = customerId;
+    this.bookCopyId = bookCopyId;
   }
 }

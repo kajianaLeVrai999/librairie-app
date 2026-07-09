@@ -1,5 +1,9 @@
 package com.example.demo.dto;
 
+import com.example.demo.entity.Author;
+import com.example.demo.entity.Category;
+import com.example.demo.entity.Gender;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.Getter;
@@ -8,36 +12,26 @@ import lombok.Setter;
 @Getter
 @Setter
 public class BookDTO {
-  private int id;
+  private Integer id;
   private String title;
   private String description;
   private Double price;
   private LocalDate publicationDate;
   private String isbn;
-  private CategoryDTO category;
-  private List<AuthorDTO> authors;
-  private List<GenderDTO> genders;
+  private Category category;
+
+  @JsonIgnore private List<Author> authors;
+
+  @JsonIgnore private List<Gender> genders;
 
   public BookDTO() {}
 
   public BookDTO(
-      int id,
-      String title,
-      String description,
-      Double price,
-      LocalDate publicationDate,
-      String isbn,
-      CategoryDTO category,
-      List<AuthorDTO> authors,
-      List<GenderDTO> genders) {
-    this.id = id;
+      String title, String description, Double price, LocalDate publicationDate, String isbn) {
     this.title = title;
     this.description = description;
     this.price = price;
     this.publicationDate = publicationDate;
     this.isbn = isbn;
-    this.category = category;
-    this.authors = authors;
-    this.genders = genders;
   }
 }
